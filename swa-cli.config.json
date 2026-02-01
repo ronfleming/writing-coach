@@ -1,0 +1,15 @@
+{
+  "$schema": "https://aka.ms/azure/static-web-apps-cli/schema",
+  "configurations": {
+    "writing-coach": {
+      "appLocation": "Client",
+      "outputLocation": "bin/Release/net10.0/publish/wwwroot",
+      "apiLocation": "Api",
+      "appBuildCommand": "dotnet publish -c Release",
+      "apiBuildCommand": "dotnet build -c Release",
+      "run": "dotnet watch run",
+      "apiPort": 7071
+    }
+  }
+}
+

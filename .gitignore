@@ -1,0 +1,47 @@
+# Planning and documentation folder (private)
+docs/
+
+# Build outputs
+bin/
+obj/
+out/
+
+# .NET
+*.user
+*.userosscache
+*.suo
+*.cache
+*.nupkg
+.nuget/
+
+# IDE
+.vs/
+.vscode/
+*.swp
+*~
+
+# Azure Functions
+local.settings.json
+
+# Azure Static Web Apps
+.swa/
+
+# Azurite (local storage emulator)
+__azurite_db_*
+__blobstorage__/
+__queuestorage__/
+
+# User secrets
+secrets.json
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test results
+TestResults/
+coverage/
