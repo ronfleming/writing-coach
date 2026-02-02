@@ -8,19 +8,93 @@
 
 .coach-header {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.logo-icon {
+    font-size: 2rem;
+    opacity: 0.9;
 }
 
 .coach-header h1 {
     font-size: 2.5rem;
     font-weight: 700;
     color: #1a1a2e;
-    margin-bottom: 0.5rem;
+    margin: 0;
 }
 
 .subtitle {
     color: #6b7280;
     font-size: 1.1rem;
+    margin: 0;
+}
+
+/* Instructions Banner */
+.instructions-banner {
+    background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+    border: 1px solid #dbeafe;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.instructions-quick {
+    font-size: 0.95rem;
+    color: #374151;
+    line-height: 1.5;
+}
+
+.instructions-quick strong {
+    color: #1d4ed8;
+}
+
+.instructions-details {
+    margin-top: 0.75rem;
+}
+
+.instructions-details summary {
+    cursor: pointer;
+    color: #1d4ed8;
+    font-weight: 500;
+    font-size: 0.9rem;
+    padding: 0.25rem 0;
+}
+
+.instructions-details summary:hover {
+    text-decoration: underline;
+}
+
+.instructions-content {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #dbeafe;
+    font-size: 0.9rem;
+    color: #4b5563;
+}
+
+.instructions-content p {
+    margin: 0 0 0.75rem 0;
+}
+
+.instructions-content ul {
+    margin: 0.5rem 0 1rem 1.5rem;
+    padding: 0;
+}
+
+.instructions-content li {
+    margin-bottom: 0.4rem;
+}
+
+.instructions-content li strong {
+    color: #374151;
 }
 
 /* Input Section */
