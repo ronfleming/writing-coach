@@ -1,44 +1,33 @@
 namespace Shared.Models;
 
-/// <summary>
-/// Response from the writing coach API
-/// </summary>
 public record CoachResponse
 {
-    /// <summary>
-    /// The original text that was submitted
-    /// </summary>
     public required string OriginalText { get; init; }
-
-    /// <summary>
-    /// Minimal corrections (grammar, spelling, agreement, word order only)
-    /// </summary>
     public required string MinimalFix { get; init; }
-
-    /// <summary>
-    /// Enhanced version with natural phrasing, idioms, and register-appropriate language
-    /// </summary>
-    public required string C1Upgrade { get; init; }
-
-    /// <summary>
-    /// Optional style variants in different registers
-    /// </summary>
+    public required string UpgradedText { get; init; }
     public StyleVariants? Variants { get; init; }
-
-    /// <summary>
-    /// Top issues identified with explanations (max 5)
-    /// </summary>
     public List<FeedbackItem> Feedback { get; init; } = [];
-
-    /// <summary>
-    /// Reusable phrases extracted from the improved text
-    /// </summary>
     public List<PhraseEntry> PhraseBank { get; init; } = [];
-
-    /// <summary>
-    /// Tags for recurring error categories
-    /// </summary>
     public List<string> ErrorTags { get; init; } = [];
+    public string? RegisterNote { get; init; }
+    public AlternativeInterpretation? Alternative { get; init; }
+    public string? ModelUsed { get; init; }
+    public TokenUsage? Usage { get; init; }
+}
+
+public record TokenUsage
+{
+    public int InputTokens { get; init; }
+    public int OutputTokens { get; init; }
+    public int TotalTokens => InputTokens + OutputTokens;
+}
+
+public record AlternativeInterpretation
+{
+    public required string OriginalPhrase { get; init; }
+    public required string PrimaryMeaning { get; init; }
+    public required string AlternativeMeaning { get; init; }
+    public required string AlternativeText { get; init; }
 }
 
 public record StyleVariants
@@ -50,57 +39,20 @@ public record StyleVariants
 
 public record FeedbackItem
 {
-    /// <summary>
-    /// Brief description of the issue
-    /// </summary>
     public required string Issue { get; init; }
-
-    /// <summary>
-    /// Why this matters for clear communication
-    /// </summary>
     public required string WhyItMatters { get; init; }
-
-    /// <summary>
-    /// A memorable rule of thumb
-    /// </summary>
     public required string QuickRule { get; init; }
-
-    /// <summary>
-    /// Concrete example showing the correction
-    /// </summary>
     public required string Example { get; init; }
-
-    /// <summary>
-    /// Error category tag (e.g., "prep-case", "word-order")
-    /// </summary>
     public string? Tag { get; init; }
 }
 
 public record PhraseEntry
 {
-    /// <summary>
-    /// The German phrase
-    /// </summary>
-    public required string German { get; init; }
-
-    /// <summary>
-    /// English translation/meaning
-    /// </summary>
-    public required string English { get; init; }
-
-    /// <summary>
-    /// Grammatical case if applicable (Akkusativ, Dativ, etc.)
-    /// </summary>
-    public string? Case { get; init; }
-
-    /// <summary>
-    /// Additional notes about usage
-    /// </summary>
+    public required string Phrase { get; init; }
+    public string? Pattern { get; init; }
+    public required string Translation { get; init; }
+    public string? Level { get; init; }
+    public string? GrammaticalInfo { get; init; }
     public string? Notes { get; init; }
-
-    /// <summary>
-    /// Tags for categorization (verb-prep, idiom, connector, etc.)
-    /// </summary>
     public List<string> Tags { get; init; } = [];
 }
-

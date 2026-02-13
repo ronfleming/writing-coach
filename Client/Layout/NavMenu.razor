@@ -15,20 +15,96 @@
             </NavLink>
         </div>
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="about">
+            <NavLink class="nav-link" href="history">
+                <span class="bi bi-clock-nav-menu" aria-hidden="true"></span> History
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="phrases">
+                <span class="bi bi-book-nav-menu" aria-hidden="true"></span> Phrases
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="about-us">
                 <span class="bi bi-info-circle-nav-menu" aria-hidden="true"></span> About
             </NavLink>
         </div>
+
+        @if (isDev)
+        {
+            <div class="nav-item px-3 dev-section">
+                <hr class="dev-divider" />
+                <button class="nav-link dev-clear-btn" @onclick="ClearAllData" disabled="@isClearing">
+                    <span class="bi bi-trash-nav-menu" aria-hidden="true"></span>
+                    @if (isClearing)
+                    {
+                        <span>Clearing...</span>
+                    }
+                    else
+                    {
+                        <span>🗑️ Clear All Data</span>
+                    }
+                </button>
+                @if (clearMessage is not null)
+                {
+                    <div class="clear-message">@clearMessage</div>
+                }
+            </div>
+        }
     </nav>
 </div>
 
 @code {
+    [Inject] private IWebAssemblyHostEnvironment HostEnv { get; set; } = default!;
+    [Inject] private HttpClient Http { get; set; } = default!;
+
     private bool collapseNavMenu = true;
+    private bool isDev;
+    private bool isClearing;
+    private string? clearMessage;
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    protected override void OnInitialized()
+    {
+        isDev = HostEnv.IsDevelopment();
+    }
 
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
+    }
+
+    private async Task ClearAllData()
+    {
+        isClearing = true;
+        clearMessage = null;
+
+        try
+        {
+            var response = await Http.DeleteAsync("/api/admin/clear?userId=anonymous");
+            if (response.IsSuccessStatusCode)
+            {
+                clearMessage = "✅ All data cleared";
+            }
+            else
+            {
+                clearMessage = "❌ Failed to clear data";
+            }
+        }
+        catch (Exception ex)
+        {
+            clearMessage = $"❌ {ex.Message}";
+        }
+        finally
+        {
+            isClearing = false;
+            StateHasChanged();
+
+            // Auto-hide message after 3 seconds
+            await Task.Delay(3000);
+            clearMessage = null;
+            StateHasChanged();
+        }
     }
 }

@@ -10,13 +10,26 @@ namespace Api.Functions;
 
 public class CoachFunction
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
     private readonly ILogger<CoachFunction> _logger;
     private readonly ICoachService _coachService;
+    private readonly ISessionRepository _sessionRepo;
+    private readonly IPhraseRepository _phraseRepo;
 
-    public CoachFunction(ILogger<CoachFunction> logger, ICoachService coachService)
+    public CoachFunction(
+        ILogger<CoachFunction> logger,
+        ICoachService coachService,
+        ISessionRepository sessionRepo,
+        IPhraseRepository phraseRepo)
     {
         _logger = logger;
         _coachService = coachService;
+        _sessionRepo = sessionRepo;
+        _phraseRepo = phraseRepo;
     }
 
     [Function("Coach")]
@@ -28,10 +41,7 @@ public class CoachFunction
         try
         {
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            var request = JsonSerializer.Deserialize<CoachRequest>(requestBody, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            var request = JsonSerializer.Deserialize<CoachRequest>(requestBody, JsonOptions);
 
             if (request is null || string.IsNullOrWhiteSpace(request.Text))
             {
@@ -43,7 +53,15 @@ public class CoachFunction
                 return new BadRequestObjectResult(new { error = "Text must be 5000 characters or less" });
             }
 
+            if (!Enum.IsDefined(typeof(AIModel), request.Model))
+            {
+                return new BadRequestObjectResult(new { error = "Invalid AI model selected" });
+            }
+
             var response = await _coachService.AnalyzeAsync(request);
+
+            _ = PersistSessionAsync(request, response);
+
             return new OkObjectResult(response);
         }
         catch (JsonException)
@@ -59,5 +77,54 @@ public class CoachFunction
             };
         }
     }
-}
 
+    /// <summary>
+    /// Persists the session and extracted phrases in the background.
+    /// </summary>
+    private async Task PersistSessionAsync(CoachRequest request, CoachResponse response)
+    {
+        try
+        {
+            var userId = "anonymous"; // TODO: replace with auth identity
+
+            var session = new SessionDocument
+            {
+                UserId = userId,
+                Request = request,
+                Response = response,
+                TargetLanguage = request.TargetLanguage,
+                TargetLevel = request.TargetLevel.ToString(),
+                ModelUsed = response.ModelUsed
+            };
+
+            await _sessionRepo.SaveAsync(session);
+
+            if (response.PhraseBank.Count > 0)
+            {
+                var phrases = response.PhraseBank.Select(p => new PhraseDocument
+                {
+                    UserId = userId,
+                    SourceSessionId = session.Id,
+                    Phrase = p.Phrase,
+                    Pattern = p.Pattern,
+                    Translation = p.Translation,
+                    PhraseLevel = p.Level,
+                    GrammaticalInfo = p.GrammaticalInfo,
+                    Notes = p.Notes,
+                    Tags = p.Tags,
+                    TargetLanguage = request.TargetLanguage,
+                    TargetLevel = request.TargetLevel.ToString()
+                }).ToList();
+
+                await _phraseRepo.SaveBatchAsync(phrases);
+            }
+
+            _logger.LogInformation("Persisted session {SessionId} with {PhraseCount} phrases",
+                session.Id, response.PhraseBank.Count);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to persist session");
+        }
+    }
+}

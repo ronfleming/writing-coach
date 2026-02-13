@@ -1,0 +1,141 @@
+@page "/history"
+@inject SessionApiService SessionApi
+
+<PageTitle>Session History - Writing Coach</PageTitle>
+
+<div class="history-container">
+    <header class="page-header">
+        <h1>📜 Session History</h1>
+        <p class="subtitle">Review your past coaching sessions</p>
+    </header>
+
+    @if (isLoading)
+    {
+        <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading sessions...</p>
+        </div>
+    }
+    else if (errorMessage is not null)
+    {
+        <div class="error-message">⚠️ @errorMessage</div>
+    }
+    else if (sessions.Count == 0)
+    {
+        <div class="empty-state">
+            <div class="empty-icon">📝</div>
+            <h2>No sessions yet</h2>
+            <p>Submit some text on the <a href="/">Coach</a> page and your sessions will appear here.</p>
+        </div>
+    }
+    else
+    {
+        <div class="session-list">
+            @foreach (var session in sessions)
+            {
+                <div class="session-card @(selectedSessionId == session.Id ? "selected" : "")"
+                     @onclick="() => SelectSession(session)">
+                    <div class="session-header">
+                        <span class="session-date">@session.CreatedAt.LocalDateTime.ToString("MMM d, yyyy h:mm tt")</span>
+                        <div class="session-badges">
+                            <span class="badge level">@session.TargetLevel</span>
+                            @if (!string.IsNullOrEmpty(session.ModelUsed))
+                            {
+                                <span class="badge model">@session.ModelUsed</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="session-preview">
+                        @Truncate(session.Request.Text, 120)
+                    </div>
+                    <div class="session-meta">
+                        <span>@session.Request.Register</span>
+                        <span>·</span>
+                        <span>@session.Request.Context</span>
+                        @if (session.Response.Feedback.Count > 0)
+                        {
+                            <span>·</span>
+                            <span>@session.Response.Feedback.Count issue(s)</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (selectedSession is not null)
+        {
+            <div class="session-detail">
+                <div class="detail-header">
+                    <h2>Session Detail</h2>
+                    <button class="close-button" @onclick="ClearSelection">✕</button>
+                </div>
+                
+                <div class="original-text-card">
+                    <h3>Original Text</h3>
+                    <div class="original-text">@selectedSession.Request.Text</div>
+                </div>
+
+                <CoachResultDisplay 
+                    Response="selectedSession.Response" 
+                    Level="selectedSession.Request.TargetLevel" />
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private List<SessionDocument> sessions = [];
+    private SessionDocument? selectedSession;
+    private string? selectedSessionId;
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSessionsAsync();
+    }
+
+    private async Task LoadSessionsAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            sessions = await SessionApi.GetSessionsAsync(limit: 50);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load sessions: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void SelectSession(SessionDocument session)
+    {
+        if (selectedSessionId == session.Id)
+        {
+            ClearSelection();
+            return;
+        }
+
+        selectedSession = session;
+        selectedSessionId = session.Id;
+    }
+
+    private void ClearSelection()
+    {
+        selectedSession = null;
+        selectedSessionId = null;
+    }
+
+    private static string Truncate(string text, int maxLength)
+    {
+        if (text.Length <= maxLength) return text;
+        return text[..maxLength].TrimEnd() + "...";
+    }
+}
+

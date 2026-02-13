@@ -1,10 +1,18 @@
-@page "/about"
+@page "/about-us"
 
-<PageTitle>About - Writing Coach</PageTitle>
+<PageTitle>About Us - Writing Coach</PageTitle>
+
+<HeadContent>
+    <meta name="description" content="Writing Coach is an AI-powered tool that helps language learners transform rough drafts into polished, natural German prose with targeted feedback and reusable phrases." />
+    <meta property="og:title" content="About Us - Writing Coach" />
+    <meta property="og:description" content="Learn about Writing Coach, an AI-powered German writing assistant built by Ron Fleming." />
+    <meta property="og:type" content="website" />
+    <link rel="canonical" href="https://writingcoach.app/about-us" />
+</HeadContent>
 
 <div class="about-container">
     <header class="about-header">
-        <h1>About Writing Coach</h1>
+        <h1>About Us</h1>
     </header>
 
     <section class="about-section">
@@ -45,7 +53,7 @@
         <ul>
             <li><strong>Frontend:</strong> Blazor WebAssembly</li>
             <li><strong>Backend:</strong> Azure Functions (C#)</li>
-            <li><strong>AI:</strong> OpenAI GPT-4o-mini with structured outputs</li>
+            <li><strong>AI:</strong> OpenAI GPT-4.1-mini with structured JSON outputs</li>
             <li><strong>Hosting:</strong> Azure Static Web Apps</li>
         </ul>
         <p>
@@ -56,8 +64,9 @@
     <section class="about-section">
         <h2>Privacy & Data</h2>
         <p>
-            Your text is sent to OpenAI's API for processing and is not stored permanently. 
-            We recommend avoiding sensitive personal information in your submissions.
+            Your text is sent to OpenAI's API for analysis and stored in Azure Cosmos DB 
+            to power your session history and phrase bank. We recommend avoiding 
+            sensitive personal information in your submissions.
         </p>
         <p>
             For details on how OpenAI handles data, see their 

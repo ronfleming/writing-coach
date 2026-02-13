@@ -27,9 +27,11 @@ local.settings.json
 .swa/
 
 # Azurite (local storage emulator)
+.azurite/
 __azurite_db_*
 __blobstorage__/
 __queuestorage__/
+AzuriteConfig
 
 # User secrets
 secrets.json

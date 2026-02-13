@@ -1,0 +1,300 @@
+/* Results Section */
+.results-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.result-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.result-card.featured {
+    border: 2px solid #3b82f6;
+    background: linear-gradient(to bottom right, #eff6ff, white);
+}
+
+.result-card h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1a1a2e;
+    margin-bottom: 0.5rem;
+}
+
+.result-description {
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.result-text {
+    background: #f9fafb;
+    padding: 1rem;
+    border-radius: 8px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    margin-bottom: 1rem;
+}
+
+.copy-button {
+    padding: 0.5rem 1rem;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+}
+
+.copy-button:hover {
+    background: #e5e7eb;
+}
+
+/* Variants */
+.variant {
+    padding: 0.75rem;
+    background: #f9fafb;
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+}
+
+.variant:last-child {
+    margin-bottom: 0;
+}
+
+.variant strong {
+    color: #374151;
+}
+
+.variant p {
+    margin: 0.5rem 0 0 0;
+    color: #1f2937;
+}
+
+/* Feedback */
+.feedback-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.feedback-item {
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 8px;
+    border-left: 4px solid #3b82f6;
+}
+
+.feedback-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.why-matters {
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+}
+
+.quick-rule {
+    color: #059669;
+    font-weight: 500;
+    margin: 0.5rem 0;
+}
+
+.example {
+    display: block;
+    background: #1f2937;
+    color: #e5e7eb;
+    padding: 0.75rem;
+    border-radius: 6px;
+    font-family: 'Fira Code', 'Consolas', monospace;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+/* Tags */
+.tag {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background: #dbeafe;
+    color: #1d4ed8;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.tag.large {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+}
+
+.tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+/* Phrase Table */
+.phrase-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.phrase-table th,
+.phrase-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.phrase-table th {
+    background: #f3f4f6;
+    font-weight: 600;
+    color: #374151;
+}
+
+.phrase-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.pattern {
+    display: inline-block;
+    font-size: 0.8rem;
+    color: #6b7280;
+    font-style: italic;
+    margin-top: 0.25rem;
+    padding: 0.2rem 0.4rem;
+    background: #f3f4f6;
+    border-radius: 4px;
+    font-family: 'Fira Code', 'Consolas', monospace;
+}
+
+/* Register Note */
+.register-note {
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    color: #92400e;
+    font-size: 0.9rem;
+}
+
+/* Alternative Interpretation */
+.alternative-section {
+    margin-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 1rem;
+}
+
+.alternative-section summary {
+    cursor: pointer;
+    color: #1d4ed8;
+    font-weight: 500;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.alternative-section summary:hover {
+    background: #eff6ff;
+}
+
+.alternative-content {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 8px;
+}
+
+.alternative-explanation {
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+}
+
+.interpretation-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.interpretation {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+
+.interpretation-label {
+    font-weight: 600;
+    color: #374151;
+    min-width: 120px;
+}
+
+.alternative-text {
+    margin-top: 1rem;
+}
+
+.alternative-text .result-text {
+    margin-top: 0.5rem;
+    background: white;
+}
+
+/* Result metadata (model + tokens) */
+.result-meta {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1.5rem;
+    font-size: 0.75rem;
+    color: #9ca3af;
+    padding-top: 0.5rem;
+    border-top: 1px solid #f3f4f6;
+    margin-top: 0.5rem;
+}
+
+/* Copy Feedback Toast */
+.copy-feedback {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: #1f2937;
+    color: white;
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    animation: fadeInUp 0.2s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .phrase-table {
+        font-size: 0.8rem;
+    }
+    
+    .phrase-table th,
+    .phrase-table td {
+        padding: 0.5rem;
+    }
+}
+

@@ -1,0 +1,308 @@
+@page "/phrases"
+@inject PhraseApiService PhraseApi
+
+<PageTitle>Phrase Bank - Writing Coach</PageTitle>
+
+<div class="phrases-container">
+    <header class="page-header">
+        <h1>📚 Phrase Bank</h1>
+        <p class="subtitle">Your collected phrases and patterns — filter, review, and track mastery</p>
+    </header>
+
+    <!-- Filters -->
+    <div class="filter-bar">
+        <div class="filter-group">
+            <label>Level</label>
+            <div class="level-toggles">
+                <button class="level-btn @(selectedLevel is null ? "active" : "")"
+                        @onclick="() => SetLevel(null)">All</button>
+                @foreach (var level in Enum.GetValues<ProficiencyLevel>())
+                {
+                    <button class="level-btn @(selectedLevel == level.ToString() ? "active" : "")"
+                            @onclick="() => SetLevel(level.ToString())">@level</button>
+                }
+            </div>
+        </div>
+
+        <div class="filter-group">
+            <label>Status</label>
+            <div class="status-toggles">
+                <button class="status-btn @(selectedStatus is null ? "active" : "")"
+                        @onclick="() => SetStatus(null)">All</button>
+                <button class="status-btn learning @(selectedStatus == "learning" ? "active" : "")"
+                        @onclick='() => SetStatus("learning")'>📖 Learning</button>
+                <button class="status-btn learned @(selectedStatus == "learned" ? "active" : "")"
+                        @onclick='() => SetStatus("learned")'>✅ Learned</button>
+                <button class="status-btn favorite @(showFavoritesOnly ? "active" : "")"
+                        @onclick="ToggleFavoritesFilter">⭐ Favorites</button>
+            </div>
+        </div>
+
+        <div class="filter-group">
+            <label>Type</label>
+            <div class="tag-toggles">
+                <button class="tag-btn @(selectedTag is null ? "active" : "")"
+                        @onclick="() => SetTag(null)">All</button>
+                @foreach (var tag in availableTags)
+                {
+                    <button class="tag-btn @(selectedTag == tag ? "active" : "")"
+                            @onclick="() => SetTag(tag)">@tag</button>
+                }
+            </div>
+        </div>
+
+        <div class="filter-group search-group">
+            <label>Search</label>
+            <input type="text" class="search-input" placeholder="Filter by text..."
+                   @bind="searchText" @bind:event="oninput" />
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading phrases...</p>
+        </div>
+    }
+    else if (errorMessage is not null)
+    {
+        <div class="error-message">⚠️ @errorMessage</div>
+    }
+    else if (phrases.Count == 0)
+    {
+        <div class="empty-state">
+            <div class="empty-icon">📚</div>
+            <h2>No phrases yet</h2>
+            <p>Phrases are automatically extracted when you use the <a href="/">Coach</a>. Submit some text to start building your phrase bank.</p>
+        </div>
+    }
+    else
+    {
+        <div class="phrase-count">
+            Showing @filteredPhrases.Count of @phrases.Count phrase(s)
+            @if (selectedLevel is not null || selectedStatus is not null || selectedTag is not null || showFavoritesOnly || !string.IsNullOrWhiteSpace(searchText))
+            {
+                <span class="filter-info">
+                    (filtered@(selectedLevel is not null ? $" · {selectedLevel}" : "")@(selectedStatus is not null ? $" · {selectedStatus}" : "")@(showFavoritesOnly ? " · ⭐" : "")@(selectedTag is not null ? $" · {selectedTag}" : "")@(!string.IsNullOrWhiteSpace(searchText) ? $" · \"{searchText}\"" : ""))
+                </span>
+            }
+        </div>
+
+        <div class="phrase-cards">
+            @foreach (var phrase in filteredPhrases)
+            {
+                <div class="phrase-card @(phrase.Status == "learned" ? "learned" : "") @(phrase.IsFavorite ? "favorited" : "")">
+                    <div class="card-top-row">
+                        <div class="phrase-text">
+                            <strong>@phrase.Phrase</strong>
+                            @if (!string.IsNullOrEmpty(phrase.Pattern))
+                            {
+                                <span class="pattern">@phrase.Pattern</span>
+                            }
+                        </div>
+                        <div class="card-top-right">
+                            <span class="phrase-date">@phrase.CreatedAt.LocalDateTime.ToString("MMM d, yyyy")</span>
+                            <button class="star-btn @(phrase.IsFavorite ? "active" : "")"
+                                    @onclick="() => ToggleFavorite(phrase)"
+                                    title="@(phrase.IsFavorite ? "Remove from favorites" : "Add to favorites")">
+                                @(phrase.IsFavorite ? "★" : "☆")
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="phrase-translation">@phrase.Translation</div>
+
+                    <div class="card-bottom-row">
+                        <div class="phrase-details">
+                            @if (!string.IsNullOrEmpty(phrase.GrammaticalInfo))
+                            {
+                                <span class="detail-item grammar">@phrase.GrammaticalInfo</span>
+                            }
+                            @if (!string.IsNullOrEmpty(phrase.Notes))
+                            {
+                                <span class="detail-item notes">@phrase.Notes</span>
+                            }
+                            @foreach (var tag in phrase.Tags)
+                            {
+                                <span class="tag">@tag</span>
+                            }
+                            @if (!string.IsNullOrEmpty(phrase.PhraseLevel))
+                            {
+                                <span class="badge level">@phrase.PhraseLevel</span>
+                            }
+                        </div>
+                        <div class="phrase-action">
+                            @if (phrase.Status == "learning")
+                            {
+                                <button class="action-btn mark-learned"
+                                        @onclick="() => MarkAsLearned(phrase)"
+                                        disabled="@updatingId.Contains(phrase.Id)">
+                                    ✅ Mark Learned
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="action-btn mark-learning"
+                                        @onclick="() => MarkAsLearning(phrase)"
+                                        disabled="@updatingId.Contains(phrase.Id)">
+                                    📖 Back to Learning
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<PhraseDocument> phrases = [];
+    private string? selectedLevel;
+    private string? selectedStatus;
+    private string? selectedTag;
+    private string? searchText;
+    private bool showFavoritesOnly;
+    private bool isLoading = true;
+    private string? errorMessage;
+    private HashSet<string> updatingId = [];
+
+    // Known tag types for the filter bar
+    private static readonly string[] availableTags =
+        ["verb-prep", "collocation", "idiom", "connector", "phrase"];
+
+    private List<PhraseDocument> filteredPhrases
+    {
+        get
+        {
+            IEnumerable<PhraseDocument> result = phrases;
+
+            if (showFavoritesOnly)
+                result = result.Where(p => p.IsFavorite);
+
+            if (!string.IsNullOrEmpty(selectedTag))
+                result = result.Where(p => p.Tags.Contains(selectedTag, StringComparer.OrdinalIgnoreCase));
+
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                var term = searchText.Trim();
+                result = result.Where(p =>
+                    p.Phrase.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                    p.Translation.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                    (p.Pattern ?? "").Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                    (p.GrammaticalInfo ?? "").Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                    (p.Notes ?? "").Contains(term, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return result.ToList();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPhrasesAsync();
+    }
+
+    private async Task LoadPhrasesAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            phrases = await PhraseApi.GetPhrasesAsync(
+                phraseLevel: selectedLevel,
+                status: selectedStatus,
+                limit: 200);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load phrases: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SetLevel(string? level)
+    {
+        selectedLevel = level;
+        await LoadPhrasesAsync();
+    }
+
+    private async Task SetStatus(string? status)
+    {
+        selectedStatus = status;
+        await LoadPhrasesAsync();
+    }
+
+    private void SetTag(string? tag)
+    {
+        selectedTag = tag;
+    }
+
+    private void ToggleFavoritesFilter()
+    {
+        showFavoritesOnly = !showFavoritesOnly;
+    }
+
+    private async Task ToggleFavorite(PhraseDocument phrase)
+    {
+        updatingId.Add(phrase.Id);
+
+        try
+        {
+            var updated = await PhraseApi.ToggleFavoriteAsync(phrase.Id);
+            if (updated is not null)
+            {
+                var idx = phrases.FindIndex(p => p.Id == phrase.Id);
+                if (idx >= 0)
+                    phrases[idx] = updated;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to update favorite: {ex.Message}";
+        }
+        finally
+        {
+            updatingId.Remove(phrase.Id);
+        }
+    }
+
+    private async Task MarkAsLearned(PhraseDocument phrase)
+    {
+        await UpdatePhraseStatus(phrase, "learned");
+    }
+
+    private async Task MarkAsLearning(PhraseDocument phrase)
+    {
+        await UpdatePhraseStatus(phrase, "learning");
+    }
+
+    private async Task UpdatePhraseStatus(PhraseDocument phrase, string newStatus)
+    {
+        updatingId.Add(phrase.Id);
+
+        try
+        {
+            var updated = await PhraseApi.UpdateStatusAsync(phrase.Id, newStatus);
+            if (updated is not null)
+            {
+                var idx = phrases.FindIndex(p => p.Id == phrase.Id);
+                if (idx >= 0)
+                    phrases[idx] = updated;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to update phrase: {ex.Message}";
+        }
+        finally
+        {
+            updatingId.Remove(phrase.Id);
+        }
+    }
+}

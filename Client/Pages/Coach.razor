@@ -1,17 +1,28 @@
 @page "/"
 @page "/coach"
-@using Shared.Models
-@using Client.Services
 @inject CoachApiService CoachApi
+@inject IWebAssemblyHostEnvironment HostEnv
 
-<PageTitle>Writing Coach</PageTitle>
+<PageTitle>Writing Coach - AI-Powered German Writing Assistant</PageTitle>
+
+<HeadContent>
+    <meta name="description" content="Transform your German writing into natural, professional prose. Get grammar corrections, C1-level upgrades, targeted feedback, and reusable phrases." />
+    <meta property="og:title" content="Writing Coach - AI-Powered German Writing Assistant" />
+    <meta property="og:description" content="Transform your German writing into natural, professional prose with AI-powered corrections and learning feedback." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Writing Coach - AI-Powered German Writing Assistant" />
+    <meta name="twitter:description" content="Transform your German writing into natural, professional prose." />
+    <link rel="canonical" href="https://writingcoach.app/" />
+</HeadContent>
 
 <div class="coach-container">
     <header class="coach-header">
         <div class="logo-container">
-            <span class="logo-icon">📝</span>
+            <span class="logo-icon">✍️</span>
             <h1>Writing Coach</h1>
-            <span class="logo-icon">✨</span>
+            <span class="logo-icon">✍️</span>
         </div>
         <p class="subtitle">Transform your German writing into natural, professional prose</p>
     </header>
@@ -31,12 +42,12 @@
                     <li><strong>Context</strong> — What kind of document is this? (Helps the AI understand tone expectations)</li>
                     <li><strong>Target Level</strong> — Your target proficiency (B2, C1, etc.)</li>
                 </ul>
-                <p><strong>3. Review your results:</strong></p>
+                    <p><strong>3. Review your results:</strong></p>
                 <ul>
                     <li><strong>Minimal Fix</strong> — Just the grammar/spelling corrections</li>
-                    <li><strong>C1 Upgrade</strong> — Natural, idiomatic, polished version</li>
+                    <li><strong>Upgraded Text</strong> — Natural, idiomatic, polished version for your target level</li>
                     <li><strong>Feedback</strong> — Specific issues with memorable rules</li>
-                    <li><strong>Phrase Bank</strong> — Reusable expressions for your vocabulary</li>
+                    <li><strong>Phrase Bank</strong> — Reusable expressions extracted from the improved text</li>
                 </ul>
             </div>
         </details>
@@ -49,7 +60,7 @@
                 id="textInput" 
                 @bind="inputText" 
                 @bind:event="oninput"
-                placeholder="Paste your German text here..."
+                placeholder="Write or paste your German text here..."
                 rows="6"
                 maxlength="5000"
                 disabled="@isLoading"></textarea>
@@ -93,11 +104,31 @@
             <div class="form-group">
                 <label for="level">Target Level</label>
                 <select id="level" @bind="selectedLevel" disabled="@isLoading">
+                    <option value="@ProficiencyLevel.A1">A1</option>
+                    <option value="@ProficiencyLevel.A2">A2</option>
                     <option value="@ProficiencyLevel.B1">B1</option>
                     <option value="@ProficiencyLevel.B2">B2</option>
                     <option value="@ProficiencyLevel.C1">C1</option>
                     <option value="@ProficiencyLevel.C2">C2</option>
                 </select>
+            </div>
+
+            <div class="form-group">
+                <label for="model">AI Model</label>
+                <select id="model" @bind="selectedModel" disabled="@isLoading">
+                    @foreach (var (model, details) in AIModelInfo.All)
+                    {
+                        if (details.IsPremium && !isDev)
+                        {
+                            <option value="@model" disabled>🔒 @details.DisplayName (requires account)</option>
+                        }
+                        else
+                        {
+                            <option value="@model">@details.DisplayName @(details.IsPremium ? "⚡" : "")</option>
+                        }
+                    }
+                </select>
+                <div class="model-info">@AIModelInfo.Get(selectedModel).Description — @AIModelInfo.Get(selectedModel).ApproxCostPerRequest/req</div>
             </div>
         </div>
 
@@ -123,120 +154,7 @@
 
     @if (response is not null)
     {
-        <div class="results-section">
-            <div class="result-card">
-                <h2>✅ Minimal Fix</h2>
-                <p class="result-description">Grammar and spelling corrections only</p>
-                <div class="result-text">@response.MinimalFix</div>
-                <button class="copy-button" @onclick="() => CopyToClipboard(response.MinimalFix)">📋 Copy</button>
-            </div>
-
-            <div class="result-card featured">
-                <h2>🚀 C1 Upgrade</h2>
-                <p class="result-description">Natural, idiomatic, register-appropriate</p>
-                <div class="result-text">@response.C1Upgrade</div>
-                <button class="copy-button" @onclick="() => CopyToClipboard(response.C1Upgrade)">📋 Copy</button>
-            </div>
-
-            @if (response.Variants is not null && HasVariants(response.Variants))
-            {
-                <div class="result-card">
-                    <h2>🎭 Style Variants</h2>
-                    @if (!string.IsNullOrEmpty(response.Variants.Colloquial))
-                    {
-                        <div class="variant">
-                            <strong>Colloquial:</strong>
-                            <p>@response.Variants.Colloquial</p>
-                        </div>
-                    }
-                    @if (!string.IsNullOrEmpty(response.Variants.Neutral))
-                    {
-                        <div class="variant">
-                            <strong>Neutral:</strong>
-                            <p>@response.Variants.Neutral</p>
-                        </div>
-                    }
-                    @if (!string.IsNullOrEmpty(response.Variants.Formal))
-                    {
-                        <div class="variant">
-                            <strong>Formal:</strong>
-                            <p>@response.Variants.Formal</p>
-                        </div>
-                    }
-                </div>
-            }
-
-            @if (response.Feedback.Count > 0)
-            {
-                <div class="result-card">
-                    <h2>📝 Feedback</h2>
-                    <div class="feedback-list">
-                        @foreach (var item in response.Feedback)
-                        {
-                            <div class="feedback-item">
-                                <div class="feedback-header">
-                                    <strong>@item.Issue</strong>
-                                    @if (!string.IsNullOrEmpty(item.Tag))
-                                    {
-                                        <span class="tag">@item.Tag</span>
-                                    }
-                                </div>
-                                <p class="why-matters">@item.WhyItMatters</p>
-                                <p class="quick-rule">💡 @item.QuickRule</p>
-                                <code class="example">@item.Example</code>
-                            </div>
-                        }
-                    </div>
-                </div>
-            }
-
-            @if (response.PhraseBank.Count > 0)
-            {
-                <div class="result-card">
-                    <h2>📚 Phrase Bank</h2>
-                    <p class="result-description">Reusable expressions from your text</p>
-                    <table class="phrase-table">
-                        <thead>
-                            <tr>
-                                <th>German</th>
-                                <th>English</th>
-                                <th>Case</th>
-                                <th>Tags</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var phrase in response.PhraseBank)
-                            {
-                                <tr>
-                                    <td><strong>@phrase.German</strong></td>
-                                    <td>@phrase.English</td>
-                                    <td>@(phrase.Case ?? "—")</td>
-                                    <td>
-                                        @foreach (var tag in phrase.Tags)
-                                        {
-                                            <span class="tag">@tag</span>
-                                        }
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-
-            @if (response.ErrorTags.Count > 0)
-            {
-                <div class="result-card">
-                    <h2>🏷️ Error Categories</h2>
-                    <div class="tag-cloud">
-                        @foreach (var tag in response.ErrorTags)
-                        {
-                            <span class="tag large">@tag</span>
-                        }
-                    </div>
-                </div>
-            }
-        </div>
+        <CoachResultDisplay Response="response" Level="selectedLevel" />
     }
 </div>
 
@@ -246,10 +164,17 @@
     private Goal selectedGoal = Goal.Correct;
     private Context selectedContext = Context.General;
     private ProficiencyLevel selectedLevel = ProficiencyLevel.C1;
+    private AIModel selectedModel = AIModel.Gpt41Mini;
     
+    private bool isDev;
     private bool isLoading = false;
     private string? errorMessage;
     private CoachResponse? response;
+
+    protected override void OnInitialized()
+    {
+        isDev = HostEnv.IsDevelopment();
+    }
 
     private async Task SubmitAsync()
     {
@@ -268,7 +193,8 @@
                 Register = selectedRegister,
                 Goal = selectedGoal,
                 Context = selectedContext,
-                TargetLevel = selectedLevel
+                TargetLevel = selectedLevel,
+                Model = selectedModel
             };
 
             response = await CoachApi.AnalyzeAsync(request);
@@ -283,17 +209,5 @@
         }
     }
 
-    private static bool HasVariants(StyleVariants variants)
-    {
-        return !string.IsNullOrEmpty(variants.Colloquial) 
-            || !string.IsNullOrEmpty(variants.Neutral) 
-            || !string.IsNullOrEmpty(variants.Formal);
-    }
-
-    private async Task CopyToClipboard(string text)
-    {
-        // Will implement with JS interop
-        await Task.CompletedTask;
-    }
 }
 

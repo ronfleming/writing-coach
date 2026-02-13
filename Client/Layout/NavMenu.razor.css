@@ -65,6 +65,48 @@
     color: white;
 }
 
+/* Dev-only section */
+.dev-section {
+    margin-top: auto;
+}
+
+.dev-divider {
+    border-color: rgba(255, 255, 255, 0.15);
+    margin: 0.25rem 0;
+}
+
+.dev-clear-btn {
+    color: #fca5a5 !important;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-radius: 4px;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    line-height: 3rem;
+    font-size: 0.9rem;
+    width: 100%;
+    padding: 0 0.5rem;
+    text-align: left;
+}
+
+.dev-clear-btn:hover:not(:disabled) {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #fecaca !important;
+}
+
+.dev-clear-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.clear-message {
+    font-size: 0.75rem;
+    color: #d1d5db;
+    padding: 0.25rem 0.5rem;
+}
+
 @media (min-width: 641px) {
     .navbar-toggler {
         display: none;
