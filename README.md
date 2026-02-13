@@ -45,7 +45,7 @@ writing-coach/
 
 ### Prerequisites
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download) and [.NET 10 SDK](https://dotnet.microsoft.com/download)
+- [.NET 9 SDK](https://dotnet.microsoft.com/download) (also builds .NET 8 projects)
 - [Azure Functions Core Tools v4](https://docs.microsoft.com/azure/azure-functions/functions-run-local)
 - [Azurite](https://www.npmjs.com/package/azurite) (`npm install -g azurite`)
 - [OpenAI API key](https://platform.openai.com/api-keys)
