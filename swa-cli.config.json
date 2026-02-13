@@ -3,7 +3,7 @@
     "configurations": {
         "writing-coach": {
             "appLocation": "Client",
-            "outputLocation": "bin/Release/net10.0/publish/wwwroot",
+            "outputLocation": "bin/Release/net9.0/publish/wwwroot",
             "apiLocation": "Api",
             "appBuildCommand": "dotnet publish -c Release",
             "apiBuildCommand": "dotnet build -c Release",

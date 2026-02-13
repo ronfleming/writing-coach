@@ -18,7 +18,7 @@ AI-powered writing assistant for German language learners. Corrects grammar, upg
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | Blazor WebAssembly (.NET 10) |
+| Frontend | Blazor WebAssembly (.NET 9) |
 | Backend | Azure Functions v4 (.NET 8, isolated worker) |
 | Database | Azure Cosmos DB (NoSQL, serverless) |
 | AI | OpenAI API (structured JSON output) |
