@@ -1,5 +1,6 @@
 @page "/history"
 @inject SessionApiService SessionApi
+@inject AuthService Auth
 
 <PageTitle>Session History - Writing Coach</PageTitle>
 
@@ -9,7 +10,20 @@
         <p class="subtitle">Review your past coaching sessions</p>
     </header>
 
-    @if (isLoading)
+    @if (!Auth.IsAuthenticated)
+    {
+        <div class="empty-state">
+            <div class="empty-icon">🔒</div>
+            <h2>Sign in to track your progress</h2>
+            <p>Your coaching sessions are saved automatically when you're signed in. Sign in to start building your learning history.</p>
+            <div class="auth-cta">
+                <a href="/.auth/login/github" class="cta-btn github">Sign in with GitHub</a>
+                <a href="/.auth/login/aad" class="cta-btn microsoft">Sign in with Microsoft</a>
+                <a href="/.auth/login/google" class="cta-btn google">Sign in with Google</a>
+            </div>
+        </div>
+    }
+    else if (isLoading)
     {
         <div class="loading-state">
             <div class="spinner"></div>
@@ -92,7 +106,16 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadSessionsAsync();
+        await Auth.GetAuthStateAsync();
+
+        if (Auth.IsAuthenticated)
+        {
+            await LoadSessionsAsync();
+        }
+        else
+        {
+            isLoading = false;
+        }
     }
 
     private async Task LoadSessionsAsync()
@@ -138,4 +161,3 @@
         return text[..maxLength].TrimEnd() + "...";
     }
 }
-

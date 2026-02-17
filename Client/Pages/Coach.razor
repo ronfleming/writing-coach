@@ -1,6 +1,7 @@
 @page "/"
 @page "/coach"
 @inject CoachApiService CoachApi
+@inject AuthService Auth
 @inject IWebAssemblyHostEnvironment HostEnv
 
 <PageTitle>Writing Coach - AI-Powered German Writing Assistant</PageTitle>
@@ -60,11 +61,17 @@
                 id="textInput" 
                 @bind="inputText" 
                 @bind:event="oninput"
-                placeholder="Write or paste your German text here..."
+                placeholder="Write or paste your German text here (at least 10 characters)..."
                 rows="6"
                 maxlength="5000"
                 disabled="@isLoading"></textarea>
-            <div class="char-count">@(inputText?.Length ?? 0) / 5000 characters</div>
+            <div class="char-count @((inputText?.Length ?? 0) is > 0 and < 10 ? "char-count-warn" : "")">
+                @(inputText?.Length ?? 0) / 5000 characters
+                @if ((inputText?.Length ?? 0) is > 0 and < 10)
+                {
+                    <span> — need at least 10</span>
+                }
+            </div>
         </div>
 
         <div class="options-row">
@@ -118,7 +125,7 @@
                 <select id="model" @bind="selectedModel" disabled="@isLoading">
                     @foreach (var (model, details) in AIModelInfo.All)
                     {
-                        if (details.IsPremium && !isDev)
+                        if (details.IsPremium && !canUsePremium)
                         {
                             <option value="@model" disabled>🔒 @details.DisplayName (requires account)</option>
                         }
@@ -132,7 +139,8 @@
             </div>
         </div>
 
-        <button class="coach-button" @onclick="SubmitAsync" disabled="@(isLoading || string.IsNullOrWhiteSpace(inputText))">
+        <button class="coach-button" @onclick="SubmitAsync"
+                disabled="@(isLoading || string.IsNullOrWhiteSpace(inputText) || (inputText?.Length ?? 0) < 10)">
             @if (isLoading)
             {
                 <span class="spinner"></span>
@@ -144,6 +152,23 @@
             }
         </button>
 
+        @if (rateLimitInfo is not null)
+        {
+            <div class="rate-limit-banner">
+                <span class="rate-limit-icon">⏳</span>
+                <div class="rate-limit-text">
+                    <strong>You've reached the request limit.</strong>
+                    Try again in @FormatRetryTime(rateLimitInfo.RetryAfterSeconds).
+                    @if (rateLimitInfo.IsAnonymous)
+                    {
+                        <span>
+                            <a href="/.auth/login/github">Sign in</a> for a higher limit.
+                        </span>
+                    }
+                </div>
+            </div>
+        }
+
         @if (!string.IsNullOrEmpty(errorMessage))
         {
             <div class="error-message">
@@ -154,6 +179,14 @@
 
     @if (response is not null)
     {
+        @if (!Auth.IsAuthenticated)
+        {
+            <div class="auth-nudge">
+                💡 <strong>Want to save this?</strong>
+                <a href="/.auth/login/github">Sign in</a> to save your sessions and build your personal phrase bank.
+            </div>
+        }
+
         <CoachResultDisplay Response="response" Level="selectedLevel" />
     }
 </div>
@@ -165,24 +198,30 @@
     private Context selectedContext = Context.General;
     private ProficiencyLevel selectedLevel = ProficiencyLevel.C1;
     private AIModel selectedModel = AIModel.Gpt41Mini;
-    
+
     private bool isDev;
-    private bool isLoading = false;
+    private bool canUsePremium;
+    private bool isLoading;
     private string? errorMessage;
+    private RateLimitedException? rateLimitInfo;
     private CoachResponse? response;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         isDev = HostEnv.IsDevelopment();
+        await Auth.GetAuthStateAsync();
+        // Premium models: available in dev or for authenticated users
+        canUsePremium = isDev || Auth.IsAuthenticated;
     }
 
     private async Task SubmitAsync()
     {
-        if (string.IsNullOrWhiteSpace(inputText))
+        if (string.IsNullOrWhiteSpace(inputText) || inputText.Length < 10)
             return;
 
         isLoading = true;
         errorMessage = null;
+        rateLimitInfo = null;
         response = null;
 
         try
@@ -199,6 +238,10 @@
 
             response = await CoachApi.AnalyzeAsync(request);
         }
+        catch (RateLimitedException rle)
+        {
+            rateLimitInfo = rle;
+        }
         catch (Exception ex)
         {
             errorMessage = ex.Message;
@@ -209,5 +252,10 @@
         }
     }
 
+    private static string FormatRetryTime(int seconds)
+    {
+        if (seconds < 60) return $"{seconds} seconds";
+        var minutes = (int)Math.Ceiling(seconds / 60.0);
+        return minutes == 1 ? "1 minute" : $"{minutes} minutes";
+    }
 }
-

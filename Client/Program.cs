@@ -12,6 +12,8 @@ var apiBaseUrl = builder.HostEnvironment.IsDevelopment()
     : builder.HostEnvironment.BaseAddress;
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiBaseUrl) });
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<TelemetryService>();
 builder.Services.AddScoped<CoachApiService>();
 builder.Services.AddScoped<SessionApiService>();
 builder.Services.AddScoped<PhraseApiService>();

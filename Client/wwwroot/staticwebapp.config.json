@@ -1,4 +1,53 @@
 {
+    "platform": {
+        "apiRuntime": "dotnet-isolated:8.0"
+    },
+    "auth": {
+        "identityProviders": {
+            "customOpenIdConnectProviders": {
+                "google": {
+                    "registration": {
+                        "clientIdSettingName": "GOOGLE_CLIENT_ID",
+                        "clientCredential": {
+                            "clientSecretSettingName": "GOOGLE_CLIENT_SECRET"
+                        },
+                        "openIdConnectConfiguration": {
+                            "wellKnownOpenIdConfiguration": "https://accounts.google.com/.well-known/openid-configuration"
+                        }
+                    },
+                    "login": {
+                        "nameClaimType": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
+                        "scopes": [
+                            "openid",
+                            "profile",
+                            "email"
+                        ]
+                    }
+                }
+            }
+        }
+    },
+    "routes": [
+        {
+            "route": "/api/admin/*",
+            "allowedRoles": [
+                "admin"
+            ]
+        },
+        {
+            "route": "/api/me/*",
+            "allowedRoles": [
+                "authenticated"
+            ]
+        },
+        {
+            "route": "/api/*",
+            "allowedRoles": [
+                "anonymous",
+                "authenticated"
+            ]
+        }
+    ],
     "navigationFallback": {
         "rewrite": "/index.html",
         "exclude": [
@@ -11,16 +60,11 @@
             "*.json"
         ]
     },
-    "routes": [
-        {
-            "route": "/api/*",
-            "allowedRoles": [
-                "anonymous",
-                "authenticated"
-            ]
-        }
-    ],
     "responseOverrides": {
+        "401": {
+            "redirect": "/.auth/login/github",
+            "statusCode": 302
+        },
         "404": {
             "rewrite": "/index.html"
         }

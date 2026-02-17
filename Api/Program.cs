@@ -13,6 +13,7 @@ builder.Services.AddSingleton<ICoachService, OpenAICoachService>();
 builder.Services.AddSingleton<CosmosDbService>();
 builder.Services.AddSingleton<ISessionRepository, CosmosSessionRepository>();
 builder.Services.AddSingleton<IPhraseRepository, CosmosPhraseRepository>();
+builder.Services.AddSingleton<RateLimitService>();
 
 builder.Services
     .AddApplicationInsightsTelemetryWorkerService()

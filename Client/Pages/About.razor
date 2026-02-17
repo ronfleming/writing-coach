@@ -1,4 +1,6 @@
 @page "/about-us"
+@inject AuthService Auth
+@inject PhraseApiService PhraseApi
 
 <PageTitle>About Us - Writing Coach</PageTitle>
 
@@ -53,6 +55,7 @@
         <ul>
             <li><strong>Frontend:</strong> Blazor WebAssembly</li>
             <li><strong>Backend:</strong> Azure Functions (C#)</li>
+            <li><strong>Database:</strong> Azure Cosmos DB</li>
             <li><strong>AI:</strong> OpenAI GPT-4.1-mini with structured JSON outputs</li>
             <li><strong>Hosting:</strong> Azure Static Web Apps</li>
         </ul>
@@ -64,9 +67,13 @@
     <section class="about-section">
         <h2>Privacy & Data</h2>
         <p>
-            Your text is sent to OpenAI's API for analysis and stored in Azure Cosmos DB 
-            to power your session history and phrase bank. We recommend avoiding 
-            sensitive personal information in your submissions.
+            Your text is sent to OpenAI's API for analysis. When you're signed in, your coaching sessions 
+            and phrase bank are stored in Azure Cosmos DB. Anonymous usage is not persisted.
+        </p>
+        <p>
+            We collect only data essential to the service — your coaching sessions and extracted phrases. 
+            We do not use tracking cookies or third-party analytics beyond Application Insights for 
+            operational monitoring.
         </p>
         <p>
             For details on how OpenAI handles data, see their 
@@ -74,8 +81,119 @@
         </p>
     </section>
 
+    <section class="about-section">
+        <h2>Your Data</h2>
+        <p>
+            You have the right to delete all data associated with your account at any time. 
+            This includes your coaching session history and all phrases in your phrase bank. 
+            This action is permanent and cannot be undone.
+        </p>
+
+        @if (Auth.IsAuthenticated)
+        {
+            <div class="delete-data-section">
+                @if (!showDeleteConfirm)
+                {
+                    <button class="delete-data-btn" @onclick="ShowDeleteConfirm" disabled="@isDeleting">
+                        🗑️ Delete All My Data
+                    </button>
+                }
+                else
+                {
+                    <div class="delete-confirm">
+                        <p class="confirm-warning">
+                            <strong>⚠️ Are you sure?</strong> This will permanently delete all your sessions and phrases. 
+                            This cannot be undone.
+                        </p>
+                        <div class="confirm-actions">
+                            <button class="confirm-delete-btn" @onclick="DeleteMyData" disabled="@isDeleting">
+                                @if (isDeleting)
+                                {
+                                    <span>Deleting...</span>
+                                }
+                                else
+                                {
+                                    <span>Yes, delete everything</span>
+                                }
+                            </button>
+                            <button class="confirm-cancel-btn" @onclick="CancelDelete" disabled="@isDeleting">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                }
+                @if (deleteMessage is not null)
+                {
+                    <div class="delete-feedback @(deleteSuccess ? "" : "error")">@deleteMessage</div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="delete-data-section">
+                <button class="delete-data-btn disabled" disabled title="Sign in to manage your data">
+                    🗑️ Delete All My Data
+                </button>
+                <p class="delete-hint">Sign in to manage your data.</p>
+            </div>
+        }
+    </section>
+
     <div class="about-footer">
         <a href="/" class="back-link">← Back to Writing Coach</a>
     </div>
 </div>
 
+@code {
+    private bool showDeleteConfirm;
+    private bool isDeleting;
+    private string? deleteMessage;
+    private bool deleteSuccess;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Auth.GetAuthStateAsync();
+    }
+
+    private void ShowDeleteConfirm()
+    {
+        showDeleteConfirm = true;
+        deleteMessage = null;
+    }
+
+    private void CancelDelete()
+    {
+        showDeleteConfirm = false;
+    }
+
+    private async Task DeleteMyData()
+    {
+        isDeleting = true;
+        deleteMessage = null;
+
+        try
+        {
+            var success = await PhraseApi.DeleteMyDataAsync();
+            if (success)
+            {
+                deleteSuccess = true;
+                deleteMessage = "✅ All your data has been deleted.";
+                showDeleteConfirm = false;
+            }
+            else
+            {
+                deleteSuccess = false;
+                deleteMessage = "❌ Failed to delete data. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            deleteSuccess = false;
+            deleteMessage = $"❌ {ex.Message}";
+        }
+        finally
+        {
+            isDeleting = false;
+        }
+    }
+}
