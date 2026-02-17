@@ -19,19 +19,35 @@ jobs:
         with:
           submodules: true
           lfs: false
+
+      - name: Setup .NET 9 (for Client)
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Setup .NET 8 (for API)
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build Client
+        run: dotnet publish ./Client/Client.csproj -c Release -o ./Client/bin/Release/net9.0/publish
+
+      - name: Build Api
+        run: dotnet publish ./Api/Api.csproj -c Release -o ./Api/bin/Release/net8.0/publish
+
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_DELIGHTFUL_BEACH_0399CB20F }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
-          # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
-          app_location: "./Client" # App source code path
-          api_location: "Api" # Api source code path - optional
-          output_location: "wwwroot" # Built app content directory - optional
-          ###### End of Repository/Build Configurations ######
+          skip_app_build: true
+          skip_api_build: true
+          app_location: "./Client/bin/Release/net9.0/publish/wwwroot"
+          api_location: "./Api/bin/Release/net8.0/publish"
+          output_location: ""
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
