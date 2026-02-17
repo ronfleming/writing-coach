@@ -12,22 +12,23 @@ public class SessionApiService
         _httpClient = httpClient;
     }
 
-    public async Task<List<SessionDocument>> GetSessionsAsync(string userId = "anonymous", int limit = 20)
+    /// <summary>Fetch sessions for the current user. Auth is handled by SWA header injection.</summary>
+    public async Task<List<SessionDocument>> GetSessionsAsync(int limit = 20)
     {
-        var url = $"/api/sessions?userId={Uri.EscapeDataString(userId)}&limit={limit}";
+        var url = $"/api/sessions?limit={limit}";
         return await _httpClient.GetFromJsonAsync<List<SessionDocument>>(url) ?? [];
     }
 
-    public async Task<SessionDocument?> GetSessionAsync(string id, string userId = "anonymous")
+    /// <summary>Fetch a single session by ID.</summary>
+    public async Task<SessionDocument?> GetSessionAsync(string id)
     {
-        var url = $"/api/sessions/{Uri.EscapeDataString(id)}?userId={Uri.EscapeDataString(userId)}";
-        
+        var url = $"/api/sessions/{Uri.EscapeDataString(id)}";
+
         var response = await _httpClient.GetAsync(url);
-        
+
         if (!response.IsSuccessStatusCode)
             return null;
 
         return await response.Content.ReadFromJsonAsync<SessionDocument>();
     }
 }
-

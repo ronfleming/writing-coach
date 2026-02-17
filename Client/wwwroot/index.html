@@ -56,6 +56,43 @@
         <span class="dismiss">🗙</span>
     </div>
     <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
+
+    <!-- Application Insights — only loads when connection string is configured -->
+    <script>
+        window.appInsights = null;
+
+        window.initAppInsights = function (connectionString) {
+            if (!connectionString || window.appInsights) return;
+            // Lightweight inline snippet — real SDK loaded from CDN
+            var script = document.createElement('script');
+            script.src = 'https://js.monitor.azure.com/scripts/b/ai.3.gbl.min.js';
+            script.onload = function () {
+                var cfg = { connectionString: connectionString };
+                window.appInsights = new Microsoft.ApplicationInsights.ApplicationInsights({ config: cfg });
+                window.appInsights.loadAppInsights();
+                window.appInsights.trackPageView();
+            };
+            document.head.appendChild(script);
+        };
+
+        window.trackEvent = function (name, properties) {
+            if (window.appInsights) {
+                window.appInsights.trackEvent({ name: name }, properties || {});
+            }
+        };
+
+        window.trackPageView = function (name) {
+            if (window.appInsights) {
+                window.appInsights.trackPageView({ name: name });
+            }
+        };
+
+        window.setAuthenticatedUser = function (userId) {
+            if (window.appInsights) {
+                window.appInsights.setAuthenticatedUserContext(userId);
+            }
+        };
+    </script>
 </body>
 
 </html>

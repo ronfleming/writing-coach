@@ -4,6 +4,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Shared.Models;
 using Api.Services;
+using Api.Helpers;
 using System.Text.Json;
 
 namespace Api.Functions;
@@ -19,17 +20,20 @@ public class CoachFunction
     private readonly ICoachService _coachService;
     private readonly ISessionRepository _sessionRepo;
     private readonly IPhraseRepository _phraseRepo;
+    private readonly RateLimitService _rateLimiter;
 
     public CoachFunction(
         ILogger<CoachFunction> logger,
         ICoachService coachService,
         ISessionRepository sessionRepo,
-        IPhraseRepository phraseRepo)
+        IPhraseRepository phraseRepo,
+        RateLimitService rateLimiter)
     {
         _logger = logger;
         _coachService = coachService;
         _sessionRepo = sessionRepo;
         _phraseRepo = phraseRepo;
+        _rateLimiter = rateLimiter;
     }
 
     [Function("Coach")]
@@ -38,6 +42,41 @@ public class CoachFunction
     {
         _logger.LogInformation("Coach function triggered");
 
+        // ── Bot detection ────────────────────────────────────────────
+        var userAgent = req.Headers.UserAgent.ToString();
+        if (RateLimitService.IsBotUserAgent(userAgent))
+        {
+            _logger.LogWarning("Blocked bot user-agent: {UserAgent}", userAgent);
+            return new ObjectResult(new { error = "Forbidden" }) { StatusCode = 403 };
+        }
+
+        // ── Auth ─────────────────────────────────────────────────────
+        var userId = AuthHelper.GetUserId(req);
+        var isAuth = AuthHelper.IsAuthenticated(req);
+
+        // ── Rate limiting ────────────────────────────────────────────
+        var rateLimitKey = isAuth ? $"user:{userId}" : $"ip:{AuthHelper.GetClientIp(req)}";
+        var rateCheck = _rateLimiter.Check(rateLimitKey, isAuth);
+
+        if (rateCheck.IsLimited)
+        {
+            _logger.LogWarning("Rate limited: key={Key}, count={Count}/{Limit}",
+                rateLimitKey, rateCheck.CurrentCount, rateCheck.Limit);
+
+            var result = new ObjectResult(new
+            {
+                error = "rate_limited",
+                message = "You've reached the request limit.",
+                retryAfterSeconds = rateCheck.RetryAfterSeconds,
+                isAnonymous = !isAuth
+            })
+            { StatusCode = 429 };
+
+            req.HttpContext.Response.Headers["Retry-After"] = rateCheck.RetryAfterSeconds.ToString();
+            return result;
+        }
+
+        // ── Validation & processing ──────────────────────────────────
         try
         {
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
@@ -46,6 +85,11 @@ public class CoachFunction
             if (request is null || string.IsNullOrWhiteSpace(request.Text))
             {
                 return new BadRequestObjectResult(new { error = "Text is required" });
+            }
+
+            if (request.Text.Length < 10)
+            {
+                return new BadRequestObjectResult(new { error = "Text must be at least 10 characters" });
             }
 
             if (request.Text.Length > 5000)
@@ -60,7 +104,11 @@ public class CoachFunction
 
             var response = await _coachService.AnalyzeAsync(request);
 
-            _ = PersistSessionAsync(request, response);
+            // Persist for authenticated users, or always in dev (so local testing works)
+            if (isAuth || AuthHelper.IsDevelopment)
+            {
+                _ = PersistSessionAsync(userId, request, response);
+            }
 
             return new OkObjectResult(response);
         }
@@ -78,15 +126,10 @@ public class CoachFunction
         }
     }
 
-    /// <summary>
-    /// Persists the session and extracted phrases in the background.
-    /// </summary>
-    private async Task PersistSessionAsync(CoachRequest request, CoachResponse response)
+    private async Task PersistSessionAsync(string userId, CoachRequest request, CoachResponse response)
     {
         try
         {
-            var userId = "anonymous"; // TODO: replace with auth identity
-
             var session = new SessionDocument
             {
                 UserId = userId,

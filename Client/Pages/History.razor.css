@@ -72,6 +72,44 @@
     text-decoration: underline;
 }
 
+/* Auth CTA buttons */
+.auth-cta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+    margin-top: 1.5rem;
+}
+
+.cta-btn {
+    display: inline-block;
+    padding: 0.6rem 1.5rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none !important;
+    color: white !important;
+    transition: opacity 0.2s;
+    min-width: 220px;
+    text-align: center;
+}
+
+.cta-btn:hover {
+    opacity: 0.9;
+}
+
+.cta-btn.github {
+    background: #24292e;
+}
+
+.cta-btn.microsoft {
+    background: #0078d4;
+}
+
+.cta-btn.google {
+    background: #ea4335;
+}
+
 .error-message {
     padding: 1rem;
     background: #fef2f2;

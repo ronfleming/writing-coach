@@ -65,6 +65,78 @@
     color: white;
 }
 
+/* Auth section */
+.auth-section {
+    margin-top: auto;
+}
+
+.auth-divider {
+    border-color: rgba(255, 255, 255, 0.15);
+    margin: 0.25rem 0;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    color: #d7d7d7;
+}
+
+.user-avatar {
+    font-size: 1.2rem;
+}
+
+.user-name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 150px;
+}
+
+.auth-link {
+    color: #93c5fd !important;
+    font-size: 0.85rem;
+    padding: 0.25rem 0.5rem;
+    height: auto !important;
+    line-height: normal !important;
+}
+
+.auth-link:hover {
+    color: #bfdbfe !important;
+    text-decoration: underline;
+}
+
+.sign-in-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.25rem 0.5rem;
+    margin-bottom: 0.15rem;
+}
+
+.provider-link {
+    color: #d7d7d7 !important;
+    font-size: 0.85rem;
+    padding: 0.35rem 0.5rem !important;
+    height: auto !important;
+    line-height: normal !important;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.provider-link:hover {
+    background-color: rgba(255,255,255,0.1);
+    color: white !important;
+}
+
 /* Dev-only section */
 .dev-section {
     margin-top: auto;

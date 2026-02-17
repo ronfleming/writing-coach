@@ -12,17 +12,13 @@ public class PhraseApiService
         _httpClient = httpClient;
     }
 
+    /// <summary>Fetch phrases for the current user. Auth is handled by SWA header injection.</summary>
     public async Task<List<PhraseDocument>> GetPhrasesAsync(
-        string userId = "anonymous",
         string? phraseLevel = null,
         string? status = null,
         int limit = 50)
     {
-        var queryParams = new List<string>
-        {
-            $"userId={Uri.EscapeDataString(userId)}",
-            $"limit={limit}"
-        };
+        var queryParams = new List<string> { $"limit={limit}" };
 
         if (!string.IsNullOrEmpty(phraseLevel))
             queryParams.Add($"level={Uri.EscapeDataString(phraseLevel)}");
@@ -34,21 +30,23 @@ public class PhraseApiService
         return await _httpClient.GetFromJsonAsync<List<PhraseDocument>>(url) ?? [];
     }
 
-    public async Task<PhraseDocument?> UpdateStatusAsync(string id, string newStatus, string userId = "anonymous")
+    /// <summary>Update a phrase's learning status.</summary>
+    public async Task<PhraseDocument?> UpdateStatusAsync(string id, string newStatus)
     {
-        var url = $"/api/phrases/{Uri.EscapeDataString(id)}?userId={Uri.EscapeDataString(userId)}";
-        
+        var url = $"/api/phrases/{Uri.EscapeDataString(id)}";
+
         var response = await _httpClient.PatchAsJsonAsync(url, new { status = newStatus });
-        
+
         if (!response.IsSuccessStatusCode)
             return null;
 
         return await response.Content.ReadFromJsonAsync<PhraseDocument>();
     }
 
-    public async Task<PhraseDocument?> ToggleFavoriteAsync(string id, string userId = "anonymous")
+    /// <summary>Toggle the favorite status of a phrase.</summary>
+    public async Task<PhraseDocument?> ToggleFavoriteAsync(string id)
     {
-        var url = $"/api/phrases/{Uri.EscapeDataString(id)}/favorite?userId={Uri.EscapeDataString(userId)}";
+        var url = $"/api/phrases/{Uri.EscapeDataString(id)}/favorite";
 
         var response = await _httpClient.PostAsync(url, null);
 
@@ -57,5 +55,11 @@ public class PhraseApiService
 
         return await response.Content.ReadFromJsonAsync<PhraseDocument>();
     }
-}
 
+    /// <summary>Delete all data for the current user (GDPR).</summary>
+    public async Task<bool> DeleteMyDataAsync()
+    {
+        var response = await _httpClient.DeleteAsync("/api/me/data");
+        return response.IsSuccessStatusCode;
+    }
+}

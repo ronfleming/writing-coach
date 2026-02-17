@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Api.Services;
+using Api.Helpers;
 
 namespace Api.Functions;
 
@@ -23,14 +24,18 @@ public class PhrasesFunction
         _phraseRepo = phraseRepo;
     }
 
-    /// <summary>
-    /// GET /api/phrases — list phrases for a user (filterable by level and status)
-    /// </summary>
+    /// <summary>GET /api/phrases — list phrases for the authenticated user.</summary>
     [Function("GetPhrases")]
     public async Task<IActionResult> GetPhrases(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "phrases")] HttpRequest req)
     {
-        var userId = req.Query["userId"].FirstOrDefault() ?? "anonymous";
+        var userId = AuthHelper.GetUserId(req);
+
+        // In production, anonymous users have no persisted data → return empty.
+        // In dev, allow "anonymous" so the full pipeline is testable locally.
+        if (userId == "anonymous" && !AuthHelper.IsDevelopment)
+            return new OkObjectResult(Array.Empty<object>());
+
         var phraseLevel = req.Query["level"].FirstOrDefault();
         var status = req.Query["status"].FirstOrDefault();
         var limitStr = req.Query["limit"].FirstOrDefault();
@@ -54,15 +59,16 @@ public class PhrasesFunction
         }
     }
 
-    /// <summary>
-    /// PATCH /api/phrases/{id} — update phrase status (learning → learned, or vice versa)
-    /// </summary>
+    /// <summary>PATCH /api/phrases/{id} — update phrase status.</summary>
     [Function("UpdatePhraseStatus")]
     public async Task<IActionResult> UpdatePhraseStatus(
         [HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "phrases/{id}")] HttpRequest req,
         string id)
     {
-        var userId = req.Query["userId"].FirstOrDefault() ?? "anonymous";
+        var userId = AuthHelper.GetUserId(req);
+
+        if (userId == "anonymous" && !AuthHelper.IsDevelopment)
+            return new UnauthorizedResult();
 
         try
         {
@@ -88,15 +94,16 @@ public class PhrasesFunction
         }
     }
 
-    /// <summary>
-    /// POST /api/phrases/{id}/favorite — toggle favorite on a phrase
-    /// </summary>
+    /// <summary>POST /api/phrases/{id}/favorite — toggle favorite on a phrase.</summary>
     [Function("TogglePhraseFavorite")]
     public async Task<IActionResult> ToggleFavorite(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "phrases/{id}/favorite")] HttpRequest req,
         string id)
     {
-        var userId = req.Query["userId"].FirstOrDefault() ?? "anonymous";
+        var userId = AuthHelper.GetUserId(req);
+
+        if (userId == "anonymous" && !AuthHelper.IsDevelopment)
+            return new UnauthorizedResult();
 
         try
         {
@@ -119,4 +126,3 @@ public class PhrasesFunction
         public string? Status { get; init; }
     }
 }
-
