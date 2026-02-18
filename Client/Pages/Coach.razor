@@ -20,46 +20,24 @@
 </HeadContent>
 
 <div class="coach-container">
-    <header class="coach-header">
-        <div class="logo-container">
-            <img src="logo.png" alt="German Writing Coach" class="coach-logo" />
-            <h1>German Writing Coach</h1>
-        </div>
-        <p class="subtitle">Transform your German writing into natural, professional prose</p>
-    </header>
-
-    <div class="instructions-banner">
-        <div class="instructions-quick">
-            <strong>Quick Start:</strong> Paste your text → Choose your context → Click "Coach Me" → Get corrections, improvements, and reusable phrases.
-        </div>
-        <details class="instructions-details">
-            <summary>📖 How it works</summary>
-            <div class="instructions-content">
-                <p><strong>1. Paste your text</strong> — Any German writing you want to improve (emails, cover letters, messages).</p>
-                <p><strong>2. Select your options:</strong></p>
-                <ul>
-                    <li><strong>Register</strong> — How formal should the output be? (Colloquial for friends, Formal for business)</li>
-                    <li><strong>Goal</strong> — What do you want to achieve? (Correct errors, shorten, clarify, etc.)</li>
-                    <li><strong>Context</strong> — What kind of document is this? (Helps the AI understand tone expectations)</li>
-                    <li><strong>Target Level</strong> — Your target proficiency (B2, C1, etc.)</li>
-                </ul>
-                    <p><strong>3. Review your results:</strong></p>
-                <ul>
-                    <li><strong>Minimal Fix</strong> — Just the grammar/spelling corrections</li>
-                    <li><strong>Upgraded Text</strong> — Natural, idiomatic, polished version for your target level</li>
-                    <li><strong>Feedback</strong> — Specific issues with memorable rules</li>
-                    <li><strong>Phrase Bank</strong> — Reusable expressions extracted from the improved text</li>
-                </ul>
-            </div>
-        </details>
-    </div>
-
     <div class="input-section">
-        <div class="form-group">
-            <label for="textInput">Your Text</label>
-            <textarea 
-                id="textInput" 
-                @bind="inputText" 
+        <div class="form-group textarea-group">
+            <div class="textarea-header">
+                <label for="textInput">Your German Text</label>
+                <details class="help-toggle">
+                    <summary>How it works</summary>
+                    <div class="help-content">
+                        <p>Paste your text, choose your settings, and click <strong>Coach Me</strong>.</p>
+                        <p><strong>Minimal Fix</strong> — Grammar &amp; spelling corrections only</p>
+                        <p><strong>Upgraded Text</strong> — Natural, polished version at your target level</p>
+                        <p><strong>Feedback</strong> — Specific issues with memorable rules</p>
+                        <p><strong>Phrase Bank</strong> — Reusable expressions from the improved text</p>
+                    </div>
+                </details>
+            </div>
+            <textarea
+                id="textInput"
+                @bind="inputText"
                 @bind:event="oninput"
                 placeholder="Write or paste your German text here (at least 10 characters)..."
                 rows="6"
@@ -74,9 +52,9 @@
             </div>
         </div>
 
-        <div class="options-row">
+        <div class="settings-essential">
             <div class="form-group">
-                <label for="register">Register</label>
+                <label for="register">Tone</label>
                 <select id="register" @bind="selectedRegister" disabled="@isLoading">
                     <option value="@Register.Colloquial">Colloquial</option>
                     <option value="@Register.Neutral">Neutral</option>
@@ -94,50 +72,55 @@
                     <option value="@Goal.Diplomatic">Diplomatic</option>
                 </select>
             </div>
-
-            <div class="form-group">
-                <label for="context">Context</label>
-                <select id="context" @bind="selectedContext" disabled="@isLoading">
-                    <option value="@Context.General">General</option>
-                    <option value="@Context.Recruiter">Recruiter Email</option>
-                    <option value="@Context.CoverLetter">Cover Letter</option>
-                    <option value="@Context.Behoerden">Behörden</option>
-                    <option value="@Context.Landlord">Landlord</option>
-                    <option value="@Context.Bank">Bank</option>
-                    <option value="@Context.Insurance">Insurance</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="level">Target Level</label>
-                <select id="level" @bind="selectedLevel" disabled="@isLoading">
-                    <option value="@ProficiencyLevel.A1">A1</option>
-                    <option value="@ProficiencyLevel.A2">A2</option>
-                    <option value="@ProficiencyLevel.B1">B1</option>
-                    <option value="@ProficiencyLevel.B2">B2</option>
-                    <option value="@ProficiencyLevel.C1">C1</option>
-                    <option value="@ProficiencyLevel.C2">C2</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="model">AI Model</label>
-                <select id="model" @bind="selectedModel" disabled="@isLoading">
-                    @foreach (var (model, details) in AIModelInfo.All)
-                    {
-                        if (details.IsPremium && !canUsePremium)
-                        {
-                            <option value="@model" disabled>🔒 @details.DisplayName (requires account)</option>
-                        }
-                        else
-                        {
-                            <option value="@model">@details.DisplayName @(details.IsPremium ? "⚡" : "")</option>
-                        }
-                    }
-                </select>
-                <div class="model-info">@AIModelInfo.Get(selectedModel).Description — @AIModelInfo.Get(selectedModel).ApproxCostPerRequest/req</div>
-            </div>
         </div>
+
+        <details class="settings-advanced">
+            <summary>Advanced settings</summary>
+            <div class="advanced-grid">
+                <div class="form-group">
+                    <label for="context">Context</label>
+                    <select id="context" @bind="selectedContext" disabled="@isLoading">
+                        <option value="@Context.General">General</option>
+                        <option value="@Context.Recruiter">Recruiter Email</option>
+                        <option value="@Context.CoverLetter">Cover Letter</option>
+                        <option value="@Context.Behoerden">Behörden</option>
+                        <option value="@Context.Landlord">Landlord</option>
+                        <option value="@Context.Bank">Bank</option>
+                        <option value="@Context.Insurance">Insurance</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="level">Target Level</label>
+                    <select id="level" @bind="selectedLevel" disabled="@isLoading">
+                        <option value="@ProficiencyLevel.A1">A1</option>
+                        <option value="@ProficiencyLevel.A2">A2</option>
+                        <option value="@ProficiencyLevel.B1">B1</option>
+                        <option value="@ProficiencyLevel.B2">B2</option>
+                        <option value="@ProficiencyLevel.C1">C1</option>
+                        <option value="@ProficiencyLevel.C2">C2</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="model">AI Model</label>
+                    <select id="model" @bind="selectedModel" disabled="@isLoading">
+                        @foreach (var (model, details) in AIModelInfo.All)
+                        {
+                            if (details.IsPremium && !canUsePremium)
+                            {
+                                <option value="@model" disabled>🔒 @details.DisplayName (requires account)</option>
+                            }
+                            else
+                            {
+                                <option value="@model">@details.DisplayName @(details.IsPremium ? "⚡" : "")</option>
+                            }
+                        }
+                    </select>
+                    <div class="model-info">@AIModelInfo.Get(selectedModel).Description — @AIModelInfo.Get(selectedModel).ApproxCostPerRequest/req</div>
+                </div>
+            </div>
+        </details>
 
         <button class="coach-button" @onclick="SubmitAsync"
                 disabled="@(isLoading || string.IsNullOrWhiteSpace(inputText) || (inputText?.Length ?? 0) < 10)">
