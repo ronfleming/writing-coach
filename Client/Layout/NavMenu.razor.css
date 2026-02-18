@@ -154,6 +154,14 @@
     color: white !important;
 }
 
+.auth-help {
+    margin-top: 0.5rem;
+    padding: 0 0.5rem;
+    font-size: 0.75rem;
+    line-height: 1.35;
+    color: rgba(255, 255, 255, 0.72);
+}
+
 /* Dev-only section */
 .dev-section {
     margin-top: auto;

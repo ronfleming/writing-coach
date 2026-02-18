@@ -1,4 +1,4 @@
-# Writing Coach
+# German Writing Coach
 
 AI-powered writing assistant for German language learners. Corrects grammar, upgrades text to your target CEFR level, and builds a personal phrase bank from each session.
 
@@ -31,14 +31,15 @@ writing-coach/
 ├── Client/          Blazor WASM frontend
 │   ├── Components/  Shared display components
 │   ├── Layout/      Shell layout and navigation
-│   ├── Pages/       Route pages (Coach, History, Phrases, About)
+│   ├── Pages/       Route pages (Coach, History, Phrases, About, Privacy, Terms)
 │   └── Services/    API client services
 ├── Api/             Azure Functions backend
 │   ├── Functions/   HTTP endpoints (Coach, Sessions, Phrases, Admin)
 │   └── Services/    OpenAI integration, Cosmos DB repositories
 ├── Shared/          Models shared between Client and Api
 │   └── Models/      Request/response DTOs, Cosmos DB documents
-└── docs/            Planning documents (gitignored)
+├── start-dev.ps1    Starts Azurite + API + Client locally
+└── kill-ports.ps1   Cleans up local dev ports/processes
 ```
 
 ## Local Development
@@ -104,12 +105,11 @@ If you get "address already in use" errors:
 ## Pending
 
 - Individual phrase/session hard delete
-- Authentication (Azure SWA built-in providers)
-- Premium model gating (requires auth)
 - BYOK (bring your own OpenAI key)
 - Anki export for phrase bank
 - Error analytics dashboard
 - Multi-language support (data model ready)
+- SWA auth trust UX copy (explain Microsoft broker domain during sign-in)
 
 ## License
 

@@ -54,15 +54,18 @@
             else
             {
                 <div class="sign-in-label">Sign In</div>
-                <a class="nav-link provider-link" href="/.auth/login/github?post_login_redirect_uri=@currentPath">
+                <a class="nav-link provider-link" href="/.auth/login/github?post_login_redirect_uri=@currentPath" target="_blank" rel="noopener noreferrer">
                     🐙 GitHub
                 </a>
-                <a class="nav-link provider-link" href="/.auth/login/aad?post_login_redirect_uri=@currentPath">
+                <a class="nav-link provider-link" href="/.auth/login/aad?post_login_redirect_uri=@currentPath" target="_blank" rel="noopener noreferrer">
                     🔷 Microsoft
                 </a>
-                <a class="nav-link provider-link" href="/.auth/login/google?post_login_redirect_uri=@currentPath">
+                <a class="nav-link provider-link" href="/.auth/login/google?post_login_redirect_uri=@currentPath" target="_blank" rel="noopener noreferrer">
                     🔴 Google
                 </a>
+                <div class="auth-help">
+                    Sign-in opens in a secure auth tab. If you cancel, close that tab and return here.
+                </div>
             }
         </div>
 
