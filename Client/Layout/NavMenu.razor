@@ -37,60 +37,53 @@
                 <span class="bi bi-info-circle-nav-menu" aria-hidden="true"></span> About
             </NavLink>
         </div>
+    </nav>
 
-        <!-- Auth section -->
-        <div class="nav-item px-3 auth-section">
-            <hr class="auth-divider" />
-            @if (Auth.IsAuthenticated)
+    <div class="sidebar-account">
+        @if (Auth.IsAuthenticated)
+        {
+            <div class="account-user">
+                <span class="user-avatar">👤</span>
+                <span class="user-name" title="@Auth.CurrentUserId">@Auth.CurrentUserDisplayName</span>
+            </div>
+            <a class="account-action" href="/.auth/logout?post_logout_redirect_uri=/">
+                Sign out
+            </a>
+        }
+        else
+        {
+            <div class="account-label">Sign in</div>
+            <a class="account-provider" href="/.auth/login/github?post_login_redirect_uri=@currentPath" target="_blank" rel="noopener noreferrer">
+                🐙 GitHub
+            </a>
+            <a class="account-provider" href="/.auth/login/aad?post_login_redirect_uri=@currentPath" target="_blank" rel="noopener noreferrer">
+                🔷 Microsoft
+            </a>
+            <a class="account-provider" href="/.auth/login/google?post_login_redirect_uri=@currentPath" target="_blank" rel="noopener noreferrer">
+                🔴 Google
+            </a>
+        }
+    </div>
+
+    @if (isDev)
+    {
+        <div class="sidebar-dev">
+            <button class="dev-clear-btn" @onclick="ClearAllData" disabled="@isClearing">
+                @if (isClearing)
+                {
+                    <span>Clearing...</span>
+                }
+                else
+                {
+                    <span>🗑️ Clear All Data</span>
+                }
+            </button>
+            @if (clearMessage is not null)
             {
-                <div class="user-info">
-                    <span class="user-avatar">👤</span>
-                    <span class="user-name" title="@Auth.CurrentUserId">@Auth.CurrentUserDisplayName</span>
-                </div>
-                <a class="nav-link auth-link" href="/.auth/logout?post_logout_redirect_uri=/">
-                    Sign Out
-                </a>
-            }
-            else
-            {
-                <div class="sign-in-label">Sign In</div>
-                <a class="nav-link provider-link" href="/.auth/login/github?post_login_redirect_uri=@currentPath" target="_blank" rel="noopener noreferrer">
-                    🐙 GitHub
-                </a>
-                <a class="nav-link provider-link" href="/.auth/login/aad?post_login_redirect_uri=@currentPath" target="_blank" rel="noopener noreferrer">
-                    🔷 Microsoft
-                </a>
-                <a class="nav-link provider-link" href="/.auth/login/google?post_login_redirect_uri=@currentPath" target="_blank" rel="noopener noreferrer">
-                    🔴 Google
-                </a>
-                <div class="auth-help">
-                    Sign-in opens in a secure auth tab. If you cancel, close that tab and return here.
-                </div>
+                <div class="clear-message">@clearMessage</div>
             }
         </div>
-
-        @if (isDev)
-        {
-            <div class="nav-item px-3 dev-section">
-                <hr class="dev-divider" />
-                <button class="nav-link dev-clear-btn" @onclick="ClearAllData" disabled="@isClearing">
-                    <span class="bi bi-trash-nav-menu" aria-hidden="true"></span>
-                    @if (isClearing)
-                    {
-                        <span>Clearing...</span>
-                    }
-                    else
-                    {
-                        <span>🗑️ Clear All Data</span>
-                    }
-                </button>
-                @if (clearMessage is not null)
-                {
-                    <div class="clear-message">@clearMessage</div>
-                }
-            </div>
-        }
-    </nav>
+    }
 </div>
 
 @code {

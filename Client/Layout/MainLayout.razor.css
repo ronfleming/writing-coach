@@ -6,6 +6,29 @@
 
 main {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+article {
+    flex: 1;
+}
+
+.site-footer {
+    padding: 1.5rem 2rem;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #9ca3af;
+}
+
+.site-footer a {
+    color: #6b7280;
+    text-decoration: none;
+}
+
+.site-footer a:hover {
+    color: #3b82f6;
+    text-decoration: underline;
 }
 
 .sidebar {
