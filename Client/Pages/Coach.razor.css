@@ -15,13 +15,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.75rem;
+    gap: 1rem;
     margin-bottom: 0.5rem;
 }
 
-.logo-icon {
-    font-size: 2rem;
-    opacity: 0.9;
+.coach-logo {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
 }
 
 .coach-header h1 {

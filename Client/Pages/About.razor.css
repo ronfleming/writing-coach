@@ -15,6 +15,12 @@
     color: #1a1a2e;
 }
 
+.about-subtitle {
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+}
+
 .about-section {
     background: white;
     border-radius: 12px;
