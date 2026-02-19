@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /_framework/
+Disallow: /history
+Disallow: /phrases
+
+Sitemap: https://germanwritingcoach.com/sitemap.xml
+

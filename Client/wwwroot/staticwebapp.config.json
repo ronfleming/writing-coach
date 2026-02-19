@@ -29,6 +29,18 @@
     },
     "routes": [
         {
+            "route": "/about-us",
+            "rewrite": "/about-us/index.html"
+        },
+        {
+            "route": "/privacy",
+            "rewrite": "/privacy/index.html"
+        },
+        {
+            "route": "/terms",
+            "rewrite": "/terms/index.html"
+        },
+        {
             "route": "/api/admin/*",
             "allowedRoles": [
                 "admin"

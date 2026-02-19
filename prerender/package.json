@@ -1,0 +1,13 @@
+{
+    "name": "writing-coach-prerender",
+    "version": "1.0.0",
+    "description": "Pre-rendering script for German Writing Coach SEO",
+    "type": "module",
+    "scripts": {
+        "prerender": "node prerender.mjs",
+        "serve-and-prerender": "node serve-and-prerender.mjs"
+    },
+    "dependencies": {
+        "playwright": "^1.40.0"
+    }
+}

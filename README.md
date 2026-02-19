@@ -32,12 +32,17 @@ writing-coach/
 │   ├── Components/  Shared display components
 │   ├── Layout/      Shell layout and navigation
 │   ├── Pages/       Route pages (Coach, History, Phrases, About, Privacy, Terms)
-│   └── Services/    API client services
+│   ├── Services/    API client services
+│   └── wwwroot/     Static assets, index.html, robots.txt, sitemap.xml
 ├── Api/             Azure Functions backend
 │   ├── Functions/   HTTP endpoints (Coach, Sessions, Phrases, Admin)
 │   └── Services/    OpenAI integration, Cosmos DB repositories
 ├── Shared/          Models shared between Client and Api
 │   └── Models/      Request/response DTOs, Cosmos DB documents
+├── prerender/       SEO prerendering scripts (Playwright-based)
+│   ├── prerender.mjs           Main prerendering script
+│   ├── serve-and-prerender.mjs Orchestrator (starts server + prerenders)
+│   └── package.json            Playwright dependency
 ├── start-dev.ps1    Starts Azurite + API + Client locally
 └── kill-ports.ps1   Cleans up local dev ports/processes
 ```
@@ -101,6 +106,15 @@ If you get "address already in use" errors:
 ```powershell
 .\kill-ports.ps1
 ```
+
+## SEO Features
+
+- ✅ **Prerendering** — Playwright-based static HTML generation for `/`, `/about-us`, `/privacy`, `/terms`
+- ✅ **robots.txt** — Blocks crawlers from `/api/`, `/_framework/`, auth-gated pages
+- ✅ **sitemap.xml** — All public pages with lastmod dates and priorities
+- ✅ **Structured data** — JSON-LD WebApplication schema for rich search results
+- ✅ **Noscript fallback** — Keyword-rich content for crawlers that don't execute JS
+- ✅ **App Insights** — Self-executing script for page view tracking on all pages
 
 ## Pending
 

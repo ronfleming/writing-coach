@@ -3,39 +3,30 @@
 
   <url>
     <loc>https://germanwritingcoach.com/</loc>
+    <lastmod>2026-02-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
 
   <url>
-    <loc>https://germanwritingcoach.com/history</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <url>
-    <loc>https://germanwritingcoach.com/phrases</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <url>
     <loc>https://germanwritingcoach.com/about-us</loc>
+    <lastmod>2026-02-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://germanwritingcoach.com/privacy</loc>
+    <lastmod>2026-02-18</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
 
   <url>
     <loc>https://germanwritingcoach.com/terms</loc>
+    <lastmod>2026-02-18</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
 
 </urlset>
-

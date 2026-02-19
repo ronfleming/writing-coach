@@ -8,8 +8,8 @@
     <!-- Primary Meta Tags -->
     <title>German Writing Coach - AI-Powered German Writing Assistant</title>
     <meta name="title" content="German Writing Coach - AI-Powered German Writing Assistant" />
-    <meta name="description" content="Transform your German writing into natural, professional prose. Get grammar corrections, C1-level upgrades, targeted feedback, and reusable phrases." />
-    <meta name="keywords" content="German writing coach, German writing, language learning, AI writing assistant, German grammar, C1 German, B2 German, Deutsch schreiben, language tutor" />
+    <meta name="description" content="Transform your German writing into natural, professional prose. Get grammar corrections, C1-level upgrades, targeted feedback, and reusable phrases. Prepare for Goethe-Institut exams at every CEFR level from A1 to C2." />
+    <meta name="keywords" content="German writing coach, German writing, language learning, AI writing assistant, German grammar, German exam prep, Goethe-Institut exam, German A1, German A2, German B1, German B2, German C1, German C2, TestDaF preparation, Deutsch schreiben, German cover letter, German writing practice, learn German writing, language tutor" />
     <meta name="author" content="Ron Fleming" />
     <meta name="robots" content="index, follow" />
     <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
@@ -29,6 +29,31 @@
     <meta name="twitter:description" content="Transform your German writing into natural, professional prose." />
     <meta name="twitter:image" content="https://germanwritingcoach.com/og-image.png" />
     
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": "German Writing Coach",
+            "url": "https://germanwritingcoach.com",
+            "description": "AI-powered German writing assistant for language learners. Get grammar corrections, style upgrades, and exam preparation feedback for Goethe-Institut A1 through C2 levels.",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Any",
+            "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD"
+            },
+            "author": {
+                "@type": "Person",
+                "name": "Ron Fleming",
+                "url": "https://ronfleming.com"
+            },
+            "inLanguage": ["en", "de"],
+            "keywords": "German writing coach, German exam prep, Goethe-Institut, German A1 A2 B1 B2 C1 C2, German grammar checker, TestDaF"
+        }
+    </script>
+
     <!-- Favicon & PWA -->
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
@@ -58,25 +83,67 @@
         <a href="." class="reload">Reload</a>
         <span class="dismiss">🗙</span>
     </div>
+
+    <!-- SEO fallback for crawlers that don't execute JavaScript -->
+    <noscript>
+        <div style="max-width: 800px; margin: 0 auto; padding: 2rem; font-family: sans-serif;">
+            <h1>German Writing Coach - AI-Powered German Writing Assistant</h1>
+            <p>
+                Transform your German writing into natural, professional prose. Whether you're
+                preparing for a Goethe-Institut exam (A1, A2, B1, B2, C1, C2), writing a cover
+                letter in German, or communicating with German authorities, German Writing Coach
+                provides AI-powered corrections and feedback tailored to your proficiency level.
+            </p>
+            <h2>Features</h2>
+            <ul>
+                <li>Two-pass corrections — see both minimal fixes and fully upgraded German text</li>
+                <li>Style upgrades targeting your CEFR level (A1 through C2)</li>
+                <li>Targeted feedback with memorable grammar rules</li>
+                <li>Phrase bank for building reusable German expressions</li>
+                <li>Context-aware suggestions for formal, professional, and bureaucratic German writing</li>
+            </ul>
+            <h2>Who is this for?</h2>
+            <ul>
+                <li>German language learners preparing for Goethe-Institut or TestDaF exams</li>
+                <li>Professionals writing cover letters, emails, or reports in German</li>
+                <li>Expats navigating German bureaucracy (Behorden, landlords, insurance)</li>
+                <li>Anyone who wants to improve their German writing skills</li>
+            </ul>
+            <p>
+                <a href="/about-us">About Us</a> |
+                <a href="/privacy">Privacy Policy</a> |
+                <a href="/terms">Terms of Service</a>
+            </p>
+        </div>
+    </noscript>
+
     <script src="_framework/blazor.webassembly.js"></script>
 
-    <!-- Application Insights — only loads when connection string is configured -->
+    <!-- Application Insights — self-executing, skips localhost -->
     <script>
         window.appInsights = null;
 
-        window.initAppInsights = function (connectionString) {
-            if (!connectionString || window.appInsights) return;
-            // Lightweight inline snippet — real SDK loaded from CDN
-            var script = document.createElement('script');
-            script.src = 'https://js.monitor.azure.com/scripts/b/ai.3.gbl.min.js';
-            script.onload = function () {
-                var cfg = { connectionString: connectionString };
-                window.appInsights = new Microsoft.ApplicationInsights.ApplicationInsights({ config: cfg });
-                window.appInsights.loadAppInsights();
-                window.appInsights.trackPageView();
+        (function () {
+            if (location.hostname === "localhost" || location.hostname === "127.0.0.1") return;
+
+            var s = document.createElement("script");
+            s.src = "https://js.monitor.azure.com/scripts/b/ai.3.gbl.min.js";
+            s.crossOrigin = "anonymous";
+            s.onload = function () {
+                var ai = new Microsoft.ApplicationInsights.ApplicationInsights({
+                    config: {
+                        connectionString: "InstrumentationKey=14f4262f-9597-4eac-b917-efeaa5cbf12b;IngestionEndpoint=https://eastus2-3.in.applicationinsights.azure.com/;LiveEndpoint=https://eastus2.livediagnostics.monitor.azure.com/;ApplicationId=c6f4edd0-f997-4f8f-8d3e-6ebbae715c32",
+                        disableCookiesUsage: true,
+                        enableAutoRouteTracking: true,
+                        disableExceptionTracking: false
+                    }
+                });
+                ai.loadAppInsights();
+                ai.trackPageView();
+                window.appInsights = ai;
             };
-            document.head.appendChild(script);
-        };
+            document.head.appendChild(s);
+        })();
 
         window.trackEvent = function (name, properties) {
             if (window.appInsights) {
