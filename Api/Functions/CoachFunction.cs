@@ -102,6 +102,32 @@ public class CoachFunction
                 return new BadRequestObjectResult(new { error = "Invalid AI model selected" });
             }
 
+            // ── Model access enforcement ──────────────────────────────
+            if (!AuthHelper.IsAdmin(req))
+            {
+                var userTier = isAuth ? ModelAccessTier.Authenticated : ModelAccessTier.Free;
+                var modelDetails = AIModelInfo.Get(request.Model);
+
+                if (modelDetails.RequiredTier > userTier)
+                {
+                    var hint = modelDetails.RequiredTier == ModelAccessTier.Authenticated
+                        ? "Sign in to unlock this model."
+                        : "This model requires a premium plan (coming soon).";
+
+                    _logger.LogWarning(
+                        "Model access denied: {Model} requires {Required}, user tier is {UserTier}",
+                        request.Model, modelDetails.RequiredTier, userTier);
+
+                    return new ObjectResult(new
+                    {
+                        error = "model_access_denied",
+                        message = hint,
+                        requiredTier = modelDetails.RequiredTier.ToString()
+                    })
+                    { StatusCode = 403 };
+                }
+            }
+
             var response = await _coachService.AnalyzeAsync(request);
 
             // Persist for authenticated users, or always in dev (so local testing works)

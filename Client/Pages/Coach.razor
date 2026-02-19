@@ -27,7 +27,7 @@
                 <details class="help-toggle">
                     <summary>How it works</summary>
                     <div class="help-content">
-                        <p>Paste your text, choose your settings, and click <strong>Coach Me</strong>.</p>
+                        <p>Paste or type your text, choose your settings, and click <strong>Coach Me</strong>.</p>
                         <p><strong>Minimal Fix</strong> — Grammar &amp; spelling corrections only</p>
                         <p><strong>Upgraded Text</strong> — Natural, polished version at your target level</p>
                         <p><strong>Feedback</strong> — Specific issues with memorable rules</p>
@@ -107,13 +107,19 @@
                     <select id="model" @bind="selectedModel" disabled="@isLoading">
                         @foreach (var (model, details) in AIModelInfo.All)
                         {
-                            if (details.IsPremium && !canUsePremium)
+                            @if (details.RequiredTier > userTier)
                             {
-                                <option value="@model" disabled>🔒 @details.DisplayName (requires account)</option>
+                                var lockLabel = details.RequiredTier switch
+                                {
+                                    ModelAccessTier.Authenticated => "sign in to unlock",
+                                    ModelAccessTier.Premium => "coming soon",
+                                    _ => "locked"
+                                };
+                                <option value="@model" disabled>🔒 @details.DisplayName (@lockLabel)</option>
                             }
                             else
                             {
-                                <option value="@model">@details.DisplayName @(details.IsPremium ? "⚡" : "")</option>
+                                <option value="@model">@details.DisplayName</option>
                             }
                         }
                     </select>
@@ -180,10 +186,10 @@
     private Goal selectedGoal = Goal.Correct;
     private Context selectedContext = Context.General;
     private ProficiencyLevel selectedLevel = ProficiencyLevel.C1;
-    private AIModel selectedModel = AIModel.Gpt41Mini;
+    private AIModel selectedModel = AIModel.Gpt4oMini;
 
     private bool isDev;
-    private bool canUsePremium;
+    private ModelAccessTier userTier;
     private bool isLoading;
     private string? errorMessage;
     private RateLimitedException? rateLimitInfo;
@@ -193,8 +199,19 @@
     {
         isDev = HostEnv.IsDevelopment();
         await Auth.GetAuthStateAsync();
-        // Premium models: available in dev or for authenticated users
-        canUsePremium = isDev || Auth.IsAuthenticated;
+
+        // Determine the user's access tier
+        if (isDev || Auth.State.IsAdmin)
+            userTier = ModelAccessTier.Premium;   // Full access in dev and for admin
+        else if (Auth.IsAuthenticated)
+            userTier = ModelAccessTier.Authenticated;
+        else
+            userTier = ModelAccessTier.Free;
+
+        // Default to the best model available at the user's tier
+        selectedModel = userTier >= ModelAccessTier.Authenticated
+            ? AIModel.Gpt41Mini
+            : AIModel.Gpt4oMini;
     }
 
     private async Task SubmitAsync()
