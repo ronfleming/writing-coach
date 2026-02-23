@@ -1,7 +1,7 @@
 User-agent: *
 Allow: /
+Allow: /_framework/
 Disallow: /api/
-Disallow: /_framework/
 Disallow: /history
 Disallow: /phrases
 
