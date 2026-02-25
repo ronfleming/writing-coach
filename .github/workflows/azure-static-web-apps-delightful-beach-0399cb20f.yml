@@ -36,6 +36,23 @@ jobs:
       - name: Build Api
         run: dotnet publish ./Api/Api.csproj -c Release -o ./Api/bin/Release/net8.0/publish
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+
+      - name: Install Playwright
+        working-directory: ./prerender
+        run: |
+          npm install
+          npx playwright install chromium --with-deps
+
+      - name: Prerender Pages
+        working-directory: ./prerender
+        run: node serve-and-prerender.mjs
+        env:
+          WWWROOT: ../Client/bin/Release/net9.0/publish/wwwroot
+
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
