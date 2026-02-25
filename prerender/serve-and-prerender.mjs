@@ -74,33 +74,37 @@ async function main() {
   console.log(`Serving from: ${WWWROOT}`);
   console.log(`Port: ${PORT}\n`);
 
+  const indexPath = join(WWWROOT, 'index.html');
+  if (!existsSync(indexPath)) {
+    console.error(`Error: index.html not found at ${indexPath}`);
+    process.exit(1);
+  }
+
+  // Keep an immutable SPA template in memory so route renders don't inherit
+  // head tags from previously pre-rendered pages.
+  const originalIndexHtml = readFileSync(indexPath);
+
   // Create simple HTTP server that mimics SPA behavior
   const server = createServer((req, res) => {
     let urlPath = req.url.split('?')[0]; // Remove query string
+    const hasFileExtension = extname(urlPath).length > 0;
 
-    // Try to serve the exact file
-    let filePath = join(WWWROOT, urlPath);
+    // Serve static assets by exact file path.
+    if (hasFileExtension) {
+      const filePath = join(WWWROOT, urlPath);
+      if (existsSync(filePath) && statSync(filePath).isFile()) {
+        serveFile(res, filePath);
+        return;
+      }
 
-    // If it's a directory, look for index.html
-    if (existsSync(filePath) && statSync(filePath).isDirectory()) {
-      filePath = join(filePath, 'index.html');
-    }
-
-    // If file exists, serve it
-    if (existsSync(filePath) && statSync(filePath).isFile()) {
-      serveFile(res, filePath);
+      res.writeHead(404);
+      res.end('Not found');
       return;
     }
 
-    // SPA fallback: serve index.html for all non-file routes
-    const indexPath = join(WWWROOT, 'index.html');
-    if (existsSync(indexPath)) {
-      serveFile(res, indexPath);
-      return;
-    }
-
-    res.writeHead(404);
-    res.end('Not found');
+    // SPA routes always get the original template, not generated route files.
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(originalIndexHtml);
   });
 
   // Start server

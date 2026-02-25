@@ -60,12 +60,20 @@ async function waitForBlazorReady(page) {
   await page.waitForTimeout(1000);
 }
 
-function cleanupHtml(html) {
+function cleanupHtml(html, routePath) {
   // Remove Blazor error UI
   html = html.replace(/<div id="blazor-error-ui"[\s\S]*?<\/div>\s*<\/div>/g, '');
 
   // Remove Blazor reconnection UI if present
   html = html.replace(/<div id="components-reconnect-modal"[\s\S]*?<\/div>/g, '');
+
+  // Canonical should be deterministic per route. Remove any tags rendered
+  // by prior app state and inject a single canonical URL for this page.
+  html = html.replace(/<link\s+rel="canonical"[^>]*>\s*/gi, '');
+  const canonicalUrl = routePath === '/'
+    ? 'https://germanwritingcoach.com/'
+    : `https://germanwritingcoach.com${routePath}`;
+  html = html.replace('</head>', `  <link rel="canonical" href="${canonicalUrl}" />\n</head>`);
 
   // Add a comment indicating this is pre-rendered
   html = html.replace('</head>', '  <!-- Pre-rendered for SEO -->\n  </head>');
@@ -89,7 +97,7 @@ async function prerenderRoute(browser, route) {
     let html = await page.content();
 
     // Clean up the HTML
-    html = cleanupHtml(html);
+    html = cleanupHtml(html, route.path);
 
     // Determine output path
     let outputPath;
