@@ -1,0 +1,95 @@
+@page "/news/{Slug}"
+
+@if (entry is not null)
+{
+    <PageTitle>@entry.Title - German Writing Coach</PageTitle>
+
+    <HeadContent>
+        <meta name="description" content="@entry.MetaDescription" />
+        <meta property="og:title" content="@entry.Title" />
+        <meta property="og:description" content="@entry.MetaDescription" />
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content="https://germanwritingcoach.com/news/@entry.Slug" />
+        <meta property="og:image" content="https://germanwritingcoach.com/og-image.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="article:published_time" content="@entry.PublishedDate.ToString("yyyy-MM-dd")" />
+        <meta property="article:author" content="Ron Fleming" />
+        <link rel="canonical" href="https://germanwritingcoach.com/news/@entry.Slug" />
+
+        @((MarkupString)BuildJsonLd())
+    </HeadContent>
+
+    <article class="news-article">
+        <header class="article-header">
+            <time datetime="@entry.PublishedDate.ToString("yyyy-MM-dd")">
+                @entry.PublishedDate.ToString("MMMM d, yyyy")
+            </time>
+            <h1>@entry.Title</h1>
+        </header>
+
+        <div class="article-body">
+            <DynamicComponent Type="entry.ContentComponent" />
+        </div>
+
+        <footer class="article-footer">
+            <a href="/news" class="back-link">← Back to News</a>
+        </footer>
+    </article>
+}
+else
+{
+    <PageTitle>Not Found - German Writing Coach</PageTitle>
+    <div class="news-article">
+        <div class="not-found">
+            <h1>Article not found</h1>
+            <p>The article you're looking for doesn't exist.</p>
+            <a href="/news" class="back-link">← Back to News</a>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string Slug { get; set; } = "";
+
+    private NewsEntryMeta? entry;
+
+    protected override void OnParametersSet()
+    {
+        entry = NewsData.GetBySlug(Slug);
+    }
+
+    private string BuildJsonLd()
+    {
+        if (entry is null) return "";
+
+        return $@"<script type=""application/ld+json"">
+{{
+    ""@context"": ""https://schema.org"",
+    ""@type"": ""Article"",
+    ""headline"": ""{EscapeJson(entry.Title)}"",
+    ""datePublished"": ""{entry.PublishedDate:yyyy-MM-dd}"",
+    ""author"": {{
+        ""@type"": ""Person"",
+        ""name"": ""Ron Fleming"",
+        ""url"": ""https://ronfleming.com""
+    }},
+    ""publisher"": {{
+        ""@type"": ""Organization"",
+        ""name"": ""German Writing Coach"",
+        ""url"": ""https://germanwritingcoach.com""
+    }},
+    ""description"": ""{EscapeJson(entry.MetaDescription)}"",
+    ""mainEntityOfPage"": {{
+        ""@type"": ""WebPage"",
+        ""@id"": ""https://germanwritingcoach.com/news/{entry.Slug}""
+    }}
+}}
+</script>";
+    }
+
+    private static string EscapeJson(string value) =>
+        value.Replace("\\", "\\\\").Replace("\"", "\\\"");
+}

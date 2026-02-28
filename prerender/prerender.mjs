@@ -31,6 +31,8 @@ const config = {
 const routes = [
   { path: '/', name: 'Home (Coach)' },
   { path: '/about-us', name: 'About Us' },
+  { path: '/news', name: 'News' },
+  { path: '/news/building-a-german-writing-coach', name: 'News: Building a German Writing Coach' },
   { path: '/privacy', name: 'Privacy Policy' },
   { path: '/terms', name: 'Terms of Service' },
 ];
@@ -51,6 +53,8 @@ async function waitForBlazorReady(page) {
       'h1',
       '.coach-container',
       '.about-container',
+      '.news-container',
+      '.news-article',
     ];
 
     return contentSelectors.some(sel => document.querySelector(sel) !== null);

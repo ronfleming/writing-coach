@@ -15,4 +15,18 @@
     <priority>0.7</priority>
   </url>
 
+  <url>
+    <loc>https://germanwritingcoach.com/news</loc>
+    <lastmod>2026-02-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://germanwritingcoach.com/news/building-a-german-writing-coach</loc>
+    <lastmod>2026-02-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
 </urlset>

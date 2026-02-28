@@ -1,0 +1,48 @@
+@page "/news"
+
+<PageTitle>News - German Writing Coach | Updates, Tips & German Exam Insights</PageTitle>
+
+<HeadContent>
+    <meta name="description" content="Updates, feature announcements, and German exam preparation tips from German Writing Coach — a free AI-powered tool for German language learners." />
+    <meta property="og:title" content="News - German Writing Coach" />
+    <meta property="og:description" content="Updates, feature announcements, and German exam preparation tips from German Writing Coach." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://germanwritingcoach.com/news" />
+    <meta property="og:image" content="https://germanwritingcoach.com/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
+    <link rel="canonical" href="https://germanwritingcoach.com/news" />
+</HeadContent>
+
+<div class="news-container">
+    <header class="news-header">
+        <h1>News</h1>
+    </header>
+
+    <section class="news-intro">
+        <p>
+            German Writing Coach is a project born from real language-learning needs.
+            Here you'll find updates on new features, tips for German exam preparation,
+            and the story behind the tool. Whether you're preparing for a Goethe-Institut exam
+            or simply working on your written German, I hope you'll find something useful.
+        </p>
+    </section>
+
+    <div class="news-entries">
+        @foreach (var entry in NewsData.Entries)
+        {
+            <article class="news-card">
+                <time datetime="@entry.PublishedDate.ToString("yyyy-MM-dd")">
+                    @entry.PublishedDate.ToString("MMMM d, yyyy")
+                </time>
+                <h2><a href="/news/@entry.Slug">@entry.Title</a></h2>
+                <p class="news-summary">@entry.Summary</p>
+            </article>
+        }
+    </div>
+
+    <div class="news-footer">
+        <a href="/" class="back-link">← Back to Writing Coach</a>
+    </div>
+</div>
