@@ -65,6 +65,10 @@ async function waitForBlazorReady(page) {
 }
 
 function cleanupHtml(html, routePath) {
+  // Strip Blazor component boundary markers (<!--!-->) everywhere.
+  // Critical inside <title> where they render as visible text.
+  html = html.replace(/<!--!-->/g, '');
+
   // Remove Blazor error UI
   html = html.replace(/<div id="blazor-error-ui"[\s\S]*?<\/div>\s*<\/div>/g, '');
 
