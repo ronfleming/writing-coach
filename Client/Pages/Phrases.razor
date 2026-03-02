@@ -129,7 +129,7 @@
                                 }
                             </div>
                             <div class="card-top-right">
-                                <span class="phrase-date">@phrase.CreatedAt.LocalDateTime.ToString("MMM d, yyyy")</span>
+                                <span class="phrase-date">@phrase.CreatedAt.LocalDateTime.ToString("dd MMM yyyy")</span>
                                 <button class="star-btn @(phrase.IsFavorite ? "active" : "")"
                                         @onclick="() => ToggleFavorite(phrase)"
                                         title="@(phrase.IsFavorite ? "Remove from favorites" : "Add to favorites")">

@@ -34,7 +34,7 @@
         {
             <article class="news-card">
                 <time datetime="@entry.PublishedDate.ToString("yyyy-MM-dd")">
-                    @entry.PublishedDate.ToString("MMMM d, yyyy")
+                    @entry.PublishedDate.ToString("dd MMM yyyy")
                 </time>
                 <h2><a href="/news/@entry.Slug">@entry.Title</a></h2>
                 <p class="news-summary">@entry.Summary</p>

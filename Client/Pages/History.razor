@@ -61,7 +61,7 @@
                 <div class="session-card @(selectedSessionId == session.Id ? "selected" : "")"
                      @onclick="() => SelectSession(session)">
                     <div class="session-header">
-                        <span class="session-date">@session.CreatedAt.LocalDateTime.ToString("MMM d, yyyy h:mm tt")</span>
+                        <span class="session-date">@session.CreatedAt.LocalDateTime.ToString("dd MMM yyyy HH:mm")</span>
                         <div class="session-badges">
                             <span class="badge level">@session.TargetLevel</span>
                             @if (!string.IsNullOrEmpty(session.ModelUsed))

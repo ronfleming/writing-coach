@@ -6,7 +6,10 @@
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">
-            <img src="logo.png" alt="German Writing Coach" class="brand-logo" />
+            <picture>
+                <source srcset="logo.webp" type="image/webp" />
+                <img src="logo.png" alt="German Writing Coach" class="brand-logo" width="28" height="28" />
+            </picture>
             <span class="brand-name">German Writing Coach</span>
         </a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">

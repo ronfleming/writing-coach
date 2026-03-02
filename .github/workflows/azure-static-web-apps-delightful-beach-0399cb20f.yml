@@ -30,6 +30,9 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: Install wasm-tools workload
+        run: dotnet workload install wasm-tools
+
       - name: Build Client
         run: dotnet publish ./Client/Client.csproj -c Release -o ./Client/bin/Release/net9.0/publish
 
@@ -40,6 +43,14 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20.x'
+
+      - name: Purge unused Bootstrap CSS
+        run: >
+          npx purgecss
+          --css ./Client/bin/Release/net9.0/publish/wwwroot/lib/bootstrap/dist/css/bootstrap.min.css
+          --content './Client/**/*.razor' './Client/**/*.razor.css' './Client/wwwroot/index.html' './Client/wwwroot/css/app.css'
+          --output ./Client/bin/Release/net9.0/publish/wwwroot/lib/bootstrap/dist/css/
+          --safelist collapse collapsing show showing navbar-collapse
 
       - name: Install Playwright
         working-directory: ./prerender
