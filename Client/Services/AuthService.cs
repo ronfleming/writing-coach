@@ -14,10 +14,10 @@ public class AuthService
     private readonly HttpClient _httpClient;
     private readonly bool _isDevelopment;
     private AuthState? _cachedState;
+    private Task<AuthState>? _pendingRequest;
 
     public AuthService(IWebAssemblyHostEnvironment hostEnv)
     {
-        // Use the app's own origin (not the API base) — /.auth/me is served by SWA
         _httpClient = new HttpClient { BaseAddress = new Uri(hostEnv.BaseAddress) };
         _isDevelopment = hostEnv.IsDevelopment();
     }
@@ -29,13 +29,22 @@ public class AuthService
     public AuthState State => _cachedState ?? AuthState.Anonymous;
 
     /// <summary>
-    /// Fetch auth state from SWA. Results are cached — pass forceRefresh to re-fetch.
+    /// Fetch auth state from SWA. Results are cached, and concurrent callers
+    /// share a single in-flight request to avoid duplicate /.auth/me calls.
     /// </summary>
-    public async Task<AuthState> GetAuthStateAsync(bool forceRefresh = false)
+    public Task<AuthState> GetAuthStateAsync(bool forceRefresh = false)
     {
         if (_cachedState is not null && !forceRefresh)
-            return _cachedState;
+            return Task.FromResult(_cachedState);
 
+        if (forceRefresh)
+            _pendingRequest = null;
+
+        return _pendingRequest ??= FetchAuthStateCoreAsync();
+    }
+
+    private async Task<AuthState> FetchAuthStateCoreAsync()
+    {
         try
         {
             var response = await _httpClient.GetAsync(".auth/me");
@@ -64,7 +73,6 @@ public class AuthService
             // Expected in local dev — /.auth/me doesn't exist
         }
 
-        // In local dev, simulate an authenticated user so the full pipeline is testable
         if (_isDevelopment)
         {
             _cachedState = new AuthState(

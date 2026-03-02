@@ -103,10 +103,16 @@
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         isDev = HostEnv.IsDevelopment();
+        _ = InitAuthAsync();
+    }
+
+    private async Task InitAuthAsync()
+    {
         await Auth.GetAuthStateAsync();
+        StateHasChanged();
     }
 
     protected override void OnParametersSet()
