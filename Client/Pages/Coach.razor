@@ -44,10 +44,10 @@
                 @bind:event="oninput"
                 placeholder="Write or paste your German text here (at least 10 characters)..."
                 rows="6"
-                maxlength="5000"
+                maxlength="@MaxCharacters"
                 disabled="@isLoading"></textarea>
             <div class="char-count @((inputText?.Length ?? 0) is > 0 and < 10 ? "char-count-warn" : "")">
-                @(inputText?.Length ?? 0) / 5000 characters
+                @(inputText?.Length ?? 0) / @MaxCharacters characters
                 @if ((inputText?.Length ?? 0) is > 0 and < 10)
                 {
                     <span> — need at least 10</span>
@@ -190,6 +190,8 @@
     private Context selectedContext = Context.General;
     private ProficiencyLevel selectedLevel = ProficiencyLevel.C1;
     private AIModel selectedModel = AIModel.Gpt4oMini;
+
+    private int MaxCharacters => Auth.IsAuthenticated ? 5000 : 3000;
 
     private bool isDev;
     private ModelAccessTier userTier;

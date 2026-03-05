@@ -29,11 +29,18 @@ public class CoachApiService
 
         if (!response.IsSuccessStatusCode)
         {
-            var error = await response.Content.ReadAsStringAsync();
-            throw new HttpRequestException($"API request failed: {error}");
+            var errorBody = await response.Content.ReadFromJsonAsync<ApiErrorResponse>();
+            var message = errorBody?.Error ?? "An error occurred processing your request.";
+            throw new HttpRequestException(message);
         }
 
         return await response.Content.ReadFromJsonAsync<CoachResponse>();
+    }
+
+    private record ApiErrorResponse
+    {
+        [JsonPropertyName("error")]
+        public string? Error { get; init; }
     }
 
     private record RateLimitErrorResponse

@@ -29,12 +29,13 @@ public class AdminFunction
     }
 
     /// <summary>
-    /// DELETE /api/admin/clear?userId=xxx — admin-only: delete all data for a specific user.
+    /// DELETE /api/management/clear?userId=xxx — admin-only: delete all data for a specific user.
     /// In production, gated to the "admin" role via staticwebapp.config.json.
+    /// Note: the "admin/" route prefix is reserved by the Azure Functions runtime, so this uses "management/".
     /// </summary>
     [Function("AdminClearData")]
     public async Task<IActionResult> ClearData(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "admin/clear")] HttpRequest req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "management/clear")] HttpRequest req)
     {
         // In dev, allow without auth. In prod, SWA route rules enforce the admin role.
         var targetUserId = req.Query["userId"].FirstOrDefault();

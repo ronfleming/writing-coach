@@ -15,10 +15,11 @@ public class OpenAICoachService : ICoachService
     };
 
     private const int MaxRetries = 2;
-    private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan DefaultRequestTimeout = TimeSpan.FromSeconds(60);
 
     private readonly ILogger<OpenAICoachService> _logger;
     private readonly OpenAIClient _openAIClient;
+    private readonly TimeSpan _requestTimeout;
 
     // Language display names for prompts
     private static readonly Dictionary<string, string> LanguageNames = new()
@@ -37,6 +38,11 @@ public class OpenAICoachService : ICoachService
         
         var apiKey = configuration["OpenAI:ApiKey"] 
             ?? throw new InvalidOperationException("OpenAI:ApiKey configuration is required");
+
+        var timeoutSeconds = configuration.GetValue<int?>("OpenAI:RequestTimeoutSeconds");
+        _requestTimeout = timeoutSeconds.HasValue
+            ? TimeSpan.FromSeconds(timeoutSeconds.Value)
+            : DefaultRequestTimeout;
         
         _openAIClient = new OpenAIClient(apiKey);
     }
@@ -72,7 +78,7 @@ public class OpenAICoachService : ICoachService
                 _logger.LogInformation("Sending request to OpenAI (attempt {Attempt}/{MaxRetries})",
                     attempt + 1, MaxRetries + 1);
 
-                using var cts = new CancellationTokenSource(RequestTimeout);
+                using var cts = new CancellationTokenSource(_requestTimeout);
                 var result = await chatClient.CompleteChatAsync(messages, chatOptions, cts.Token);
                 completion = result.Value;
 
@@ -258,7 +264,7 @@ public class OpenAICoachService : ICoachService
                 ],
                 "phraseBank": [
                     {
-                        "phrase": "concrete phrase from upgraded text",
+                        "phrase": "concrete phrase from the upgraded text that was NOT already correct in the user's original input — exclude phrases the user already wrote correctly",
                         "pattern": "abstract pattern, e.g. jdm bei etw (Dat) helfen",
                         "translation": "English meaning",
                         "level": "A1|A2|B1|B2|C1|C2 — intrinsic difficulty of this phrase",
@@ -323,7 +329,7 @@ public class OpenAICoachService : ICoachService
             1. Fix grammar, spelling, and structure (minimal fix - preserve original meaning exactly!)
             2. Upgrade to natural, idiomatic {levelName}-appropriate {languageName}
             3. Provide targeted feedback using the EXACT category codes below
-            4. Extract reusable phrase PATTERNS from the upgraded text
+            4. Extract reusable phrase PATTERNS from the upgraded text (excluding phrases the user already used correctly)
             
             ## ERROR CATEGORY CODES (use ONLY these)
             - ORTHOGRAPHY: spelling, capitalization, English/German false friends (is→ist, have→habe)
@@ -345,6 +351,7 @@ public class OpenAICoachService : ICoachService
             - The ABSTRACT PATTERN showing slots: e.g., "jdm bei etw (Dat) helfen", "ein Zertifikat erwerben"
             - A CEFR "level" (A1–C2) reflecting the INTRINSIC difficulty of this phrase — NOT the learner's target level.
               Examples: "Guten Tag" → A1, "sich auf etw bewerben" → B2, "einer Herausforderung gewachsen sein" → C1
+            - EXCLUDE phrases that appear (substantially the same) in the user's original text and were already correct — only include phrases the upgrade introduced or corrected
             - This helps learners recognize and reuse the pattern
             
             ## OUTPUT FORMAT
@@ -404,7 +411,7 @@ public class OpenAICoachService : ICoachService
             3. Provide minimal fix (grammar only, PRESERVE MEANING)
             4. Provide upgraded version at {request.TargetLevel} level
             5. Give 3-5 feedback items with EXACT category codes
-            6. Extract 5-10 phrase PATTERNS from your upgraded text
+            6. Extract up to 10 phrase PATTERNS from your upgraded text, excluding phrases the user already used correctly in their original input
             
             CRITICAL REMINDERS:
             - User chose "{registerText}" register — respect this choice

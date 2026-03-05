@@ -135,7 +135,7 @@
 
         try
         {
-            var response = await Http.DeleteAsync("/api/admin/clear?userId=anonymous");
+            var response = await Http.DeleteAsync("/api/management/clear?userId=anonymous");
             if (response.IsSuccessStatusCode)
             {
                 clearMessage = "✅ All data cleared";

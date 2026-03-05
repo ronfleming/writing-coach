@@ -92,9 +92,10 @@ public class CoachFunction
                 return new BadRequestObjectResult(new { error = "Text must be at least 10 characters" });
             }
 
-            if (request.Text.Length > 5000)
+            var maxLength = isAuth ? 5000 : 3000;
+            if (request.Text.Length > maxLength)
             {
-                return new BadRequestObjectResult(new { error = "Text must be 5000 characters or less" });
+                return new BadRequestObjectResult(new { error = $"Text must be {maxLength} characters or less" });
             }
 
             if (!Enum.IsDefined(typeof(AIModel), request.Model))
@@ -103,7 +104,7 @@ public class CoachFunction
             }
 
             // ── Model access enforcement ──────────────────────────────
-            if (!AuthHelper.IsAdmin(req))
+            if (!AuthHelper.IsAdmin(req) && !AuthHelper.IsDevelopment)
             {
                 var userTier = isAuth ? ModelAccessTier.Authenticated : ModelAccessTier.Free;
                 var modelDetails = AIModelInfo.Get(request.Model);
@@ -141,6 +142,11 @@ public class CoachFunction
         catch (JsonException)
         {
             return new BadRequestObjectResult(new { error = "Invalid JSON in request body" });
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Coach request failed: {Message}", ex.Message);
+            return new ObjectResult(new { error = ex.Message }) { StatusCode = 503 };
         }
         catch (Exception ex)
         {

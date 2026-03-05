@@ -91,7 +91,7 @@
             "rewrite": "/terms/index.html"
         },
         {
-            "route": "/api/admin/*",
+            "route": "/api/management/*",
             "allowedRoles": [
                 "admin"
             ]
