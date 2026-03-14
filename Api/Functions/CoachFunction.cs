@@ -145,6 +145,7 @@ public class CoachFunction
         }
         catch (InvalidOperationException ex)
         {
+            // Surface user-facing messages (e.g. timeout, invalid AI response format)
             _logger.LogWarning(ex, "Coach request failed: {Message}", ex.Message);
             return new ObjectResult(new { error = ex.Message }) { StatusCode = 503 };
         }
@@ -169,7 +170,8 @@ public class CoachFunction
                 Response = response,
                 TargetLanguage = request.TargetLanguage,
                 TargetLevel = request.TargetLevel.ToString(),
-                ModelUsed = response.ModelUsed
+                ModelUsed = response.ModelUsed,
+                IsCleanEntry = response.IsCleanEntry
             };
 
             await _sessionRepo.SaveAsync(session);

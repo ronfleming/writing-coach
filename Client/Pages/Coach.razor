@@ -3,6 +3,7 @@
 @inject CoachApiService CoachApi
 @inject AuthService Auth
 @inject IWebAssemblyHostEnvironment HostEnv
+@inject PromptService Prompts
 
 <PageTitle>German Writing Coach - AI-Powered German Writing Assistant</PageTitle>
 
@@ -27,17 +28,36 @@
         <div class="form-group textarea-group">
             <div class="textarea-header">
                 <label for="textInput">Your German Text</label>
-                <details class="help-toggle">
-                    <summary>How it works</summary>
-                    <div class="help-content">
-                        <p>Paste or type your text, choose your settings, and click <strong>Coach Me</strong>.</p>
-                        <p><strong>Minimal Fix</strong> — Grammar &amp; spelling corrections only</p>
-                        <p><strong>Upgraded Text</strong> — Natural, polished version at your target level</p>
-                        <p><strong>Feedback</strong> — Specific issues with memorable rules</p>
-                        <p><strong>Phrase Bank</strong> — Reusable expressions from the improved text</p>
-                    </div>
-                </details>
+                <div class="textarea-header-actions">
+                    <button class="prompt-me-button" @onclick="GetPromptAsync" disabled="@isLoading" title="Get a writing prompt based on your current settings">
+                        💡 Prompt Me
+                    </button>
+                    <details class="help-toggle">
+                        <summary>How it works</summary>
+                        <div class="help-content">
+                            <p>Paste or type your text, choose your settings, and click <strong>Coach Me</strong>.</p>
+                            <p><strong>Minimal Fix</strong> — Grammar &amp; spelling corrections only</p>
+                            <p><strong>Upgraded Text</strong> — Natural, polished version at your target level</p>
+                            <p><strong>Feedback</strong> — Specific issues with memorable rules</p>
+                            <p><strong>Phrase Bank</strong> — Reusable expressions from the improved text</p>
+                        </div>
+                    </details>
+                </div>
             </div>
+
+            @if (currentPrompt is not null)
+            {
+                <div class="prompt-card">
+                    <div class="prompt-card-header">
+                        <span class="prompt-card-label">Writing Prompt</span>
+                        <div class="prompt-card-actions">
+                            <button class="prompt-shuffle" @onclick="GetPromptAsync" title="Get a different prompt">🔀 Try Another</button>
+                            <button class="prompt-dismiss" @onclick="DismissPrompt" title="Dismiss prompt">✕</button>
+                        </div>
+                    </div>
+                    <p class="prompt-card-text">@currentPrompt.Text</p>
+                </div>
+            }
             <textarea
                 id="textInput"
                 @bind="inputText"
@@ -126,7 +146,7 @@
                             }
                         }
                     </select>
-                    <div class="model-info">@AIModelInfo.Get(selectedModel).Description — @AIModelInfo.Get(selectedModel).ApproxCostPerRequest/req</div>
+                    <div class="model-info">@AIModelInfo.Get(selectedModel).Description</div>
                 </div>
             </div>
         </details>
@@ -199,6 +219,7 @@
     private string? errorMessage;
     private RateLimitedException? rateLimitInfo;
     private CoachResponse? response;
+    private WritingPrompt? currentPrompt;
 
     protected override async Task OnInitializedAsync()
     {
@@ -255,6 +276,16 @@
         {
             isLoading = false;
         }
+    }
+
+    private async Task GetPromptAsync()
+    {
+        currentPrompt = await Prompts.GetRandomPromptAsync(selectedRegister, selectedContext, selectedLevel);
+    }
+
+    private void DismissPrompt()
+    {
+        currentPrompt = null;
     }
 
     private static string FormatRetryTime(int seconds)

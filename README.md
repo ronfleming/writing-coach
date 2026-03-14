@@ -7,11 +7,13 @@ AI-powered writing assistant for German language learners. Corrects grammar, upg
 - **Minimal Fix** — Grammar and spelling corrections, preserving your original style
 - **Level Upgrade** — Rewrites text with natural phrasing appropriate for your target level (A1–C2)
 - **Targeted Feedback** — Categorized error explanations with memorable rules and examples
-- **Phrase Bank** — Extracts reusable patterns (verb+preposition+case, idioms, connectors) with CEFR levels
+- **Phrase Bank** — Extracts reusable patterns (verb+preposition+case, idioms, connectors) with CEFR levels; filters out phrases you already wrote correctly
 - **Session History** — Full history of coaching sessions stored in Cosmos DB
 - **Phrase Tracking** — Mark phrases as learning/learned, favorite them, filter and search
 - **Ambiguity Detection** — Flags genuinely ambiguous phrases with alternative interpretations
 - **Register Awareness** — Respects your chosen formality level; detects Sie/du mixing
+- **Writing Prompts** — 200+ prompts matched to your CEFR level, tone, and context
+- **Clean Entry Tracking** — Visual cue and history stats when your writing needs no corrections (deterministic text-equivalence check across all models)
 - **Model Selection** — Choose between GPT-4o-mini, GPT-4.1-mini, GPT-4o, and GPT-4.1
 
 ## Tech Stack
@@ -29,11 +31,13 @@ AI-powered writing assistant for German language learners. Corrects grammar, upg
 ```
 writing-coach/
 ├── Client/          Blazor WASM frontend
-│   ├── Components/  Shared display components
+│   ├── Components/  Shared display components (CoachResultDisplay, NewsEntries/)
+│   ├── Data/        Static data registries (NewsData)
 │   ├── Layout/      Shell layout and navigation
-│   ├── Pages/       Route pages (Coach, History, Phrases, About, Privacy, Terms)
-│   ├── Services/    API client services
-│   └── wwwroot/     Static assets, index.html, robots.txt, sitemap.xml
+│   ├── Models/      Client-side view models (NewsEntryMeta)
+│   ├── Pages/       Route pages (Coach, History, Phrases, News, About, Privacy, Terms)
+│   ├── Services/    API client services + PromptService
+│   └── wwwroot/     Static assets, index.html, robots.txt, sitemap.xml, data/
 ├── Api/             Azure Functions backend
 │   ├── Functions/   HTTP endpoints (Coach, Sessions, Phrases, Admin)
 │   └── Services/    OpenAI integration, Cosmos DB repositories
@@ -109,7 +113,7 @@ If you get "address already in use" errors:
 
 ## SEO Features
 
-- ✅ **Prerendering** — Playwright-based static HTML generation for `/`, `/about-us`, `/privacy`, `/terms`
+- ✅ **Prerendering** — Playwright-based static HTML generation for `/`, `/about-us`, `/news`, `/news/*`, `/privacy`, `/terms`
 - ✅ **robots.txt** — Blocks crawlers from `/api/`, `/_framework/`, auth-gated pages
 - ✅ **sitemap.xml** — All public pages with lastmod dates and priorities
 - ✅ **Structured data** — JSON-LD WebApplication schema for rich search results

@@ -21,4 +21,5 @@ public record SessionDocument
     public string TargetLanguage { get; init; } = "de";
     public string TargetLevel { get; init; } = "C1";
     public string? ModelUsed { get; init; }
+    public bool IsCleanEntry { get; init; }
 }
