@@ -6,9 +6,24 @@
 }
 
 <div class="results-section">
-    <div class="result-card">
-        <h2>✅ Minimal Fix</h2>
-        <p class="result-description">Grammar and spelling corrections only</p>
+    <div class="result-card @(Response.IsCleanEntry ? "clean-entry" : "")">
+        <div class="card-title-row">
+            <h2>@(Response.IsCleanEntry ? "✨" : "✅") Minimal Fix</h2>
+            @if (Response.IsCleanEntry)
+            {
+                <span class="clean-entry-badge">Clean Entry</span>
+            }
+        </div>
+        <p class="result-description">
+            @if (Response.IsCleanEntry)
+            {
+                <text>No corrections needed — nice work!</text>
+            }
+            else
+            {
+                <text>Grammar and spelling corrections only</text>
+            }
+        </p>
         <div class="result-text">@Response.MinimalFix</div>
         <button class="copy-button" @onclick="() => CopyToClipboard(Response.MinimalFix)">📋 Copy</button>
     </div>

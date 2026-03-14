@@ -55,6 +55,18 @@
     }
     else
     {
+        @if (cleanEntryCount > 0)
+        {
+            <div class="clean-entry-stats">
+                <span class="clean-entry-stats-badge">Clean Entry</span>
+                <span class="clean-entry-stats-text">
+                    @cleanEntryCount Clean @(cleanEntryCount == 1 ? "Entry" : "Entries")
+                    across @cleanEntryDays @(cleanEntryDays == 1 ? "day" : "days")
+                    and @sessions.Count total @(sessions.Count == 1 ? "session" : "sessions")
+                </span>
+            </div>
+        }
+
         <div class="session-list">
             @foreach (var session in sessions)
             {
@@ -67,6 +79,10 @@
                             @if (!string.IsNullOrEmpty(session.ModelUsed))
                             {
                                 <span class="badge model">@session.ModelUsed</span>
+                            }
+                            @if (session.IsCleanEntry)
+                            {
+                                <span class="badge clean">✓ Clean</span>
                             }
                         </div>
                     </div>
@@ -114,6 +130,8 @@
     private string? selectedSessionId;
     private bool isLoading = true;
     private string? errorMessage;
+    private int cleanEntryCount;
+    private int cleanEntryDays;
 
     protected override async Task OnInitializedAsync()
     {
@@ -137,6 +155,9 @@
         try
         {
             sessions = await SessionApi.GetSessionsAsync(limit: 50);
+            var cleanSessions = sessions.Where(s => s.IsCleanEntry).ToList();
+            cleanEntryCount = cleanSessions.Count;
+            cleanEntryDays = cleanSessions.Select(s => s.CreatedAt.LocalDateTime.Date).Distinct().Count();
         }
         catch (Exception ex)
         {

@@ -17,5 +17,6 @@ builder.Services.AddScoped<TelemetryService>();
 builder.Services.AddScoped<CoachApiService>();
 builder.Services.AddScoped<SessionApiService>();
 builder.Services.AddScoped<PhraseApiService>();
+builder.Services.AddScoped<PromptService>();
 
 await builder.Build().RunAsync();

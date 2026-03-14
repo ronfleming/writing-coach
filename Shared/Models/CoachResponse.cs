@@ -11,6 +11,7 @@ public record CoachResponse
     public List<string> ErrorTags { get; init; } = [];
     public string? RegisterNote { get; init; }
     public AlternativeInterpretation? Alternative { get; init; }
+    public bool IsCleanEntry { get; init; }
     public string? ModelUsed { get; init; }
     public TokenUsage? Usage { get; init; }
 }

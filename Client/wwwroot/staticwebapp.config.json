@@ -79,6 +79,10 @@
             "rewrite": "/news/index.html"
         },
         {
+            "route": "/news/writing-prompts-and-clean-entry-tracking",
+            "rewrite": "/news/writing-prompts-and-clean-entry-tracking/index.html"
+        },
+        {
             "route": "/news/building-a-german-writing-coach",
             "rewrite": "/news/building-a-german-writing-coach/index.html"
         },

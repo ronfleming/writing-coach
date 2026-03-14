@@ -1,3 +1,5 @@
+using System.Linq;
+using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -111,11 +113,15 @@ public class OpenAICoachService : ICoachService
             var parsed = JsonSerializer.Deserialize<OpenAIResponseDto>(responseContent, JsonOptions)
                 ?? throw new InvalidOperationException("Failed to parse OpenAI response");
 
+            var minimalFix = parsed.MinimalFix ?? request.Text;
+            var isClean = IsTextEquivalent(request.Text, minimalFix);
+
             return new CoachResponse
             {
                 OriginalText = request.Text,
-                MinimalFix = parsed.MinimalFix ?? request.Text,
+                MinimalFix = minimalFix,
                 UpgradedText = parsed.UpgradedText ?? request.Text,
+                IsCleanEntry = isClean,
                 Variants = parsed.Variants is not null ? new StyleVariants
                 {
                     Colloquial = parsed.Variants.Colloquial,
@@ -130,16 +136,7 @@ public class OpenAICoachService : ICoachService
                     Example = f.Example ?? "",
                     Tag = f.Tag
                 }).ToList() ?? [],
-                PhraseBank = parsed.PhraseBank?.Select(p => new PhraseEntry
-                {
-                    Phrase = p.Phrase ?? "",
-                    Pattern = p.Pattern,
-                    Translation = p.Translation ?? "",
-                    Level = p.Level,
-                    GrammaticalInfo = p.GrammaticalInfo,
-                    Notes = p.Notes,
-                    Tags = p.Tags ?? []
-                }).ToList() ?? [],
+                PhraseBank = FilterPhraseBankAgainstOriginal(parsed.PhraseBank, request.Text),
                 ErrorTags = parsed.ErrorTags ?? [],
                 RegisterNote = parsed.RegisterNote,
                 Alternative = parsed.Alternative is not null ? new AlternativeInterpretation
@@ -239,7 +236,7 @@ public class OpenAICoachService : ICoachService
 
         var jsonSchema = """
             {
-                "minimalFix": "corrected text preserving original meaning and intent exactly",
+                "minimalFix": "corrected text preserving original meaning and intent exactly. If no corrections are needed, return the original text VERBATIM — do not reformat, re-wrap, or normalize whitespace",
                 "upgradedText": "natural, idiomatic, level-appropriate version",
                 "registerNote": "only if Sie/du mixing detected: explain and state which was normalized to, or null",
                 "alternative": {
@@ -468,6 +465,52 @@ public class OpenAICoachService : ICoachService
         public string? AlternativeMeaning { get; init; }
         public string? AlternativeText { get; init; }
     }
+
+    /// <summary>
+    /// Filters out phrase bank entries that already appear in the user's original text,
+    /// since those represent things the user already knows — not learnable improvements.
+    /// </summary>
+    private static List<PhraseEntry> FilterPhraseBankAgainstOriginal(List<PhraseDto>? phrases, string originalText)
+    {
+        if (phrases is null || phrases.Count == 0)
+            return [];
+
+        var normalizedOriginal = NormalizeForComparison(originalText);
+
+        return phrases
+            .Where(p => !string.IsNullOrWhiteSpace(p.Phrase)
+                && !normalizedOriginal.Contains(NormalizeForComparison(p.Phrase), StringComparison.OrdinalIgnoreCase))
+            .Select(p => new PhraseEntry
+            {
+                Phrase = p.Phrase ?? "",
+                Pattern = p.Pattern,
+                Translation = p.Translation ?? "",
+                Level = p.Level,
+                GrammaticalInfo = p.GrammaticalInfo,
+                Notes = p.Notes,
+                Tags = p.Tags ?? []
+            })
+            .ToList();
+    }
+
+    private static string NormalizeForComparison(string s)
+    {
+        var stripped = new string(s.Where(c =>
+            c != '\u200B' && c != '\u200C' && c != '\u200D' && c != '\uFEFF').ToArray());
+        var normalized = stripped.Normalize(NormalizationForm.FormKC);
+        return System.Text.RegularExpressions.Regex.Replace(normalized.Trim(), @"\s+", " ");
+    }
+
+    /// <summary>
+    /// Deterministic comparison for clean entry detection.
+    /// Normalizes Unicode, strips invisible characters, and collapses whitespace
+    /// so model output variations don't cause false negatives across different models.
+    /// </summary>
+    private static bool IsTextEquivalent(string original, string minimalFix) =>
+        string.Equals(
+            NormalizeForComparison(original ?? ""),
+            NormalizeForComparison(minimalFix ?? ""),
+            StringComparison.Ordinal);
 
     /// <summary>
     /// Determines if an exception is likely transient and worth retrying.

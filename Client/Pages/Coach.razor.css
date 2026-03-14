@@ -85,6 +85,104 @@
     margin-bottom: 0;
 }
 
+/* Textarea header actions */
+.textarea-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Prompt Me button */
+.prompt-me-button {
+    padding: 0.3rem 0.7rem;
+    background: transparent;
+    border: 1.5px solid #3b82f6;
+    border-radius: 6px;
+    color: #3b82f6;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+}
+
+.prompt-me-button:hover:not(:disabled) {
+    background: #eff6ff;
+}
+
+.prompt-me-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Prompt card */
+.prompt-card {
+    background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.prompt-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.prompt-card-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #1d4ed8;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.prompt-card-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.prompt-shuffle {
+    padding: 0.2rem 0.5rem;
+    background: transparent;
+    border: 1px solid #93c5fd;
+    border-radius: 4px;
+    color: #1d4ed8;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.prompt-shuffle:hover {
+    background: #dbeafe;
+}
+
+.prompt-dismiss {
+    padding: 0.15rem 0.4rem;
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.15s;
+}
+
+.prompt-dismiss:hover {
+    background: #e5e7eb;
+}
+
+.prompt-card-text {
+    color: #1e40af;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
 /* Form controls */
 .form-group {
     margin-bottom: 1rem;

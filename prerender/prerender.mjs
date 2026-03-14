@@ -32,6 +32,7 @@ const routes = [
   { path: '/', name: 'Home (Coach)' },
   { path: '/about-us', name: 'About Us' },
   { path: '/news', name: 'News' },
+  { path: '/news/writing-prompts-and-clean-entry-tracking', name: 'News: Writing Prompts and Clean Entry Tracking' },
   { path: '/news/building-a-german-writing-coach', name: 'News: Building a German Writing Coach' },
   { path: '/privacy', name: 'Privacy Policy' },
   { path: '/terms', name: 'Terms of Service' },
