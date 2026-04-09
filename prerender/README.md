@@ -65,10 +65,12 @@ cat ../Client/bin/Release/net9.0/publish/wwwroot/about-us/index.html
 The main pre-rendering script. Requires a running server.
 
 **Options:**
+
 - `--base-url <url>` - Server URL (default: `http://localhost:5050`)
 - `--output-dir <path>` - Where to save HTML files
 
 **Usage:**
+
 ```bash
 node prerender.mjs --base-url http://localhost:5050 --output-dir ../Client/bin/Release/net9.0/publish/wwwroot
 ```
@@ -78,9 +80,11 @@ node prerender.mjs --base-url http://localhost:5050 --output-dir ../Client/bin/R
 Convenience script that starts a local server, runs pre-rendering, then stops the server.
 
 **Environment variables:**
+
 - `WWWROOT` - Path to the Blazor build output (default: `../Client/bin/Release/net9.0/publish/wwwroot`)
 
 **Usage:**
+
 ```bash
 node serve-and-prerender.mjs
 ```
@@ -101,17 +105,19 @@ The following routes are pre-rendered for SEO:
 To add a new route to pre-rendering:
 
 1. Add the route to `prerender.mjs` in the `routes` array:
-   ```javascript
-   { path: '/new-page', name: 'New Page' },
-   ```
+
+    ```javascript
+    { path: '/new-page', name: 'New Page' },
+    ```
 
 2. Add a rewrite rule to `Client/wwwroot/staticwebapp.config.json`:
-   ```json
-   {
-     "route": "/new-page",
-     "rewrite": "/new-page/index.html"
-   }
-   ```
+
+    ```json
+    {
+        "route": "/new-page",
+        "rewrite": "/new-page/index.html"
+    }
+    ```
 
 3. Add the URL to `Client/wwwroot/sitemap.xml`
 
@@ -120,11 +126,13 @@ To add a new route to pre-rendering:
 **Important**: Blazor injects comment markers (`<!--Blazor:...-->`) into HTML when using `@` interpolation in `.razor` files. This can break JSON-LD structured data if placed inside `<script type="application/ld+json">` tags.
 
 **Our approach (safe)**:
+
 - JSON-LD is in **static `index.html`** (not in `.razor` files)
 - No dynamic values or `@` interpolation
 - Pre-rendering captures the final rendered HTML without Blazor markers
 
 **Alternative approach** (if you need dynamic JSON-LD in `.razor` files):
+
 - Generate JSON in C# code using `System.Text.Json.JsonSerializer`
 - Return as raw HTML string
 - See `wal-o-mat` project for reference implementation
@@ -151,16 +159,16 @@ Add to your GitHub Actions workflow after the build step:
 ```yaml
 - name: Install Playwright
   run: |
-    cd prerender
-    npm install
-    npx playwright install chromium
+      cd prerender
+      npm install
+      npx playwright install chromium
 
 - name: Prerender Pages
   run: |
-    cd prerender
-    node serve-and-prerender.mjs
+      cd prerender
+      node serve-and-prerender.mjs
   env:
-    WWWROOT: ../Client/bin/Release/net9.0/publish/wwwroot
+      WWWROOT: ../Client/bin/Release/net9.0/publish/wwwroot
 ```
 
 ## Troubleshooting
@@ -171,8 +179,8 @@ The script waits for Blazor to fully render. If a page has slow loading data, in
 
 ```javascript
 const config = {
-  timeout: 60000, // Increase if needed
-  // ...
+    timeout: 60000, // Increase if needed
+    // ...
 };
 ```
 
@@ -183,10 +191,10 @@ Check that the pre-rendered HTML includes Blazor's boot script. The `_framework/
 ### JSON-LD contains Blazor comment markers
 
 If you see `<!--Blazor:...-->` in your JSON-LD:
+
 1. Move JSON-LD to static `index.html` (recommended)
 2. OR generate JSON dynamically in C# code (see wal-o-mat example)
 
 ## Performance
 
 Pre-rendering adds ~10-30 seconds to the build time (depends on number of routes and page complexity). This is acceptable for production builds and has zero runtime cost.
-

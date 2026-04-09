@@ -1,90 +1,90 @@
 name: Azure Static Web Apps CI/CD
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    types: [opened, synchronize, reopened, closed]
-    branches:
-      - main
+    push:
+        branches:
+            - main
+    pull_request:
+        types: [opened, synchronize, reopened, closed]
+        branches:
+            - main
 
 jobs:
-  build_and_deploy_job:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
-    runs-on: ubuntu-latest
-    name: Build and Deploy Job
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-          lfs: false
+    build_and_deploy_job:
+        if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+        runs-on: ubuntu-latest
+        name: Build and Deploy Job
+        steps:
+            - uses: actions/checkout@v3
+              with:
+                  submodules: true
+                  lfs: false
 
-      - name: Setup .NET 9 (for Client)
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '9.0.x'
+            - name: Setup .NET 9 (for Client)
+              uses: actions/setup-dotnet@v3
+              with:
+                  dotnet-version: '9.0.x'
 
-      - name: Setup .NET 8 (for API)
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '8.0.x'
+            - name: Setup .NET 8 (for API)
+              uses: actions/setup-dotnet@v3
+              with:
+                  dotnet-version: '8.0.x'
 
-      - name: Install wasm-tools workload
-        run: dotnet workload install wasm-tools
+            - name: Install wasm-tools workload
+              run: dotnet workload install wasm-tools
 
-      - name: Build Client
-        run: dotnet publish ./Client/Client.csproj -c Release -o ./Client/bin/Release/net9.0/publish
+            - name: Build Client
+              run: dotnet publish ./Client/Client.csproj -c Release -o ./Client/bin/Release/net9.0/publish
 
-      - name: Build Api
-        run: dotnet publish ./Api/Api.csproj -c Release -o ./Api/bin/Release/net8.0/publish
+            - name: Build Api
+              run: dotnet publish ./Api/Api.csproj -c Release -o ./Api/bin/Release/net8.0/publish
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20.x'
+            - name: Setup Node.js
+              uses: actions/setup-node@v3
+              with:
+                  node-version: '20.x'
 
-      - name: Purge unused Bootstrap CSS
-        run: >
-          npx purgecss
-          --css ./Client/bin/Release/net9.0/publish/wwwroot/lib/bootstrap/dist/css/bootstrap.min.css
-          --content './Client/**/*.razor' './Client/**/*.razor.css' './Client/wwwroot/index.html' './Client/wwwroot/css/app.css'
-          --output ./Client/bin/Release/net9.0/publish/wwwroot/lib/bootstrap/dist/css/
-          --safelist collapse collapsing show showing navbar-collapse
+            - name: Purge unused Bootstrap CSS
+              run: >
+                  npx purgecss
+                  --css ./Client/bin/Release/net9.0/publish/wwwroot/lib/bootstrap/dist/css/bootstrap.min.css
+                  --content './Client/**/*.razor' './Client/**/*.razor.css' './Client/wwwroot/index.html' './Client/wwwroot/css/app.css'
+                  --output ./Client/bin/Release/net9.0/publish/wwwroot/lib/bootstrap/dist/css/
+                  --safelist collapse collapsing show showing navbar-collapse
 
-      - name: Install Playwright
-        working-directory: ./prerender
-        run: |
-          npm install
-          npx playwright install chromium --with-deps
+            - name: Install Playwright
+              working-directory: ./prerender
+              run: |
+                  npm install
+                  npx playwright install chromium --with-deps
 
-      - name: Prerender Pages
-        working-directory: ./prerender
-        run: node serve-and-prerender.mjs
-        env:
-          WWWROOT: ../Client/bin/Release/net9.0/publish/wwwroot
+            - name: Prerender Pages
+              working-directory: ./prerender
+              run: node serve-and-prerender.mjs
+              env:
+                  WWWROOT: ../Client/bin/Release/net9.0/publish/wwwroot
 
-      - name: Build And Deploy
-        id: builddeploy
-        uses: Azure/static-web-apps-deploy@v1
-        with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_DELIGHTFUL_BEACH_0399CB20F }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          action: "upload"
-          skip_app_build: true
-          skip_api_build: true
-          app_location: "./Client/bin/Release/net9.0/publish/wwwroot"
-          api_location: "./Api/bin/Release/net8.0/publish"
-          output_location: ""
+            - name: Build And Deploy
+              id: builddeploy
+              uses: Azure/static-web-apps-deploy@v1
+              with:
+                  azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_DELIGHTFUL_BEACH_0399CB20F }}
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  action: 'upload'
+                  skip_app_build: true
+                  skip_api_build: true
+                  app_location: './Client/bin/Release/net9.0/publish/wwwroot'
+                  api_location: './Api/bin/Release/net8.0/publish'
+                  output_location: ''
 
-  close_pull_request_job:
-    if: github.event_name == 'pull_request' && github.event.action == 'closed'
-    runs-on: ubuntu-latest
-    name: Close Pull Request Job
-    steps:
-      - name: Close Pull Request
-        id: closepullrequest
-        uses: Azure/static-web-apps-deploy@v1
-        with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_DELIGHTFUL_BEACH_0399CB20F }}
-          action: "close"
+    close_pull_request_job:
+        if: github.event_name == 'pull_request' && github.event.action == 'closed'
+        runs-on: ubuntu-latest
+        name: Close Pull Request Job
+        steps:
+            - name: Close Pull Request
+              id: closepullrequest
+              uses: Azure/static-web-apps-deploy@v1
+              with:
+                  azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_DELIGHTFUL_BEACH_0399CB20F }}
+                  action: 'close'

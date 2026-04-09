@@ -66,19 +66,21 @@
     padding-bottom: 0.15rem;
 }
 
-    .nav-item:first-of-type {
-        padding-top: 0.75rem;
-    }
+.nav-item:first-of-type {
+    padding-top: 0.75rem;
+}
 
-    .nav-item ::deep a {
-        color: rgba(255, 255, 255, 0.7);
-        border-radius: 6px;
-        height: 2.5rem;
-        display: flex;
-        align-items: center;
-        line-height: 2.5rem;
-        transition: background-color 0.15s, color 0.15s;
-    }
+.nav-item ::deep a {
+    color: rgba(255, 255, 255, 0.7);
+    border-radius: 6px;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    line-height: 2.5rem;
+    transition:
+        background-color 0.15s,
+        color 0.15s;
+}
 
 .nav-item ::deep a.active {
     background-color: rgba(255, 255, 255, 0.12);
@@ -124,7 +126,9 @@
     padding: 0.3rem 0.5rem;
     border-radius: 6px;
     text-decoration: none;
-    transition: background-color 0.15s, color 0.15s;
+    transition:
+        background-color 0.15s,
+        color 0.15s;
 }
 
 .account-provider:hover {
@@ -160,7 +164,9 @@
     padding: 0.25rem 0.5rem;
     text-decoration: none;
     border-radius: 6px;
-    transition: background-color 0.15s, color 0.15s;
+    transition:
+        background-color 0.15s,
+        color 0.15s;
 }
 
 .account-action:hover {
