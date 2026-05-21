@@ -139,6 +139,25 @@
     font-family: 'Fira Code', 'Consolas', monospace;
     font-size: 0.9rem;
     margin-top: 0.5rem;
+    line-height: 1.6;
+    word-break: break-word;
+}
+
+.example-before {
+    color: #fca5a5;
+    text-decoration: line-through;
+    text-decoration-color: rgba(252, 165, 165, 0.55);
+}
+
+.example-arrow {
+    color: #9ca3af;
+    margin: 0 0.5em;
+    user-select: none;
+}
+
+.example-after {
+    color: #86efac;
+    font-weight: 500;
 }
 
 /* Tags */

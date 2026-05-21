@@ -79,6 +79,10 @@
             "rewrite": "/news/index.html"
         },
         {
+            "route": "/news/feedback-you-can-trust",
+            "rewrite": "/news/feedback-you-can-trust/index.html"
+        },
+        {
             "route": "/news/writing-prompts-and-clean-entry-tracking",
             "rewrite": "/news/writing-prompts-and-clean-entry-tracking/index.html"
         },

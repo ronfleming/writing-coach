@@ -128,14 +128,7 @@ public class OpenAICoachService : ICoachService
                     Neutral = parsed.Variants.Neutral,
                     Formal = parsed.Variants.Formal
                 } : null,
-                Feedback = parsed.Feedback?.Select(f => new FeedbackItem
-                {
-                    Issue = f.Issue ?? "",
-                    WhyItMatters = f.WhyItMatters ?? "",
-                    QuickRule = f.QuickRule ?? "",
-                    Example = f.Example ?? "",
-                    Tag = f.Tag
-                }).ToList() ?? [],
+                Feedback = FilterFeedback(parsed.Feedback, isClean),
                 PhraseBank = FilterPhraseBankAgainstOriginal(parsed.PhraseBank, request.Text),
                 ErrorTags = parsed.ErrorTags ?? [],
                 RegisterNote = parsed.RegisterNote,
@@ -173,7 +166,8 @@ public class OpenAICoachService : ICoachService
                 ## FEEDBACK LANGUAGE
                 The learner is at {levelName} level. Write ALL feedback in ENGLISH:
                 - "issue", "whyItMatters", "quickRule" → English
-                - "example" → show the {languageName} before → after, but explain in English
+                - "before" → the original {languageName} phrase, exactly as the user wrote it
+                - "after" → the corrected/improved {languageName} phrase
                 - "registerNote" → English
                 - "notes" in phraseBank → English
                 - "translation" in phraseBank → English
@@ -185,6 +179,7 @@ public class OpenAICoachService : ICoachService
                 - Use simple, clear {languageName} (not C1+ complexity)
                 - Include English translations in parentheses for grammar terms
                   e.g., "Nebensatz (subordinate clause)", "Dativ (dative case)"
+                - "before" / "after" stay in {languageName}
                 - "translation" in phraseBank → English
                 - If an explanation would be confusing in {languageName}, fall back to English
                 """,
@@ -192,6 +187,7 @@ public class OpenAICoachService : ICoachService
                 ## FEEDBACK LANGUAGE
                 The learner is at {levelName} level. Write ALL feedback in {languageName}:
                 - "issue", "whyItMatters", "quickRule" → {languageName} at {levelName} level
+                - "before" / "after" stay in {languageName}
                 - "translation" in phraseBank → English (this always stays English for reference)
                 - Use natural, precise {languageName} in your explanations
                 """
@@ -255,7 +251,8 @@ public class OpenAICoachService : ICoachService
                         "issue": "Brief description",
                         "whyItMatters": "One line why",
                         "quickRule": "Memorable rule",
-                        "example": "before → after",
+                        "before": "the original phrase from the user's text",
+                        "after": "the corrected/improved phrase — MUST differ from before",
                         "tag": "CATEGORY_CODE"
                     }
                 ],
@@ -341,6 +338,19 @@ public class OpenAICoachService : ICoachService
             - If the issue is modal verb stacking (werden + müssen), explain the STACKING issue
             - If verbs are in the wrong ORDER within a cluster, explain the ORDER
             - Be SPECIFIC about what's actually wrong, not generic rules
+            - QUALITY OVER QUANTITY: only emit a feedback item when there is a genuine,
+              actionable issue. Inventing issues to fill a quota is harmful.
+            - "before" and "after" MUST be different. If you cannot produce a meaningfully
+              different "after", the issue is not real — drop the entire feedback item.
+            - Do NOT flag a phrase as having a category-defining error (ORTHOGRAPHY,
+              CLAUSE_STRUCTURE, VERB_PATTERN) when the original is already correct
+              under that category's rules. Pattern-matching a familiar rule onto a
+              correct sentence is a hallucination, not feedback.
+            - When MinimalFix is identical to the user's original text, hard-grammar
+              feedback (ORTHOGRAPHY / CLAUSE_STRUCTURE / VERB_PATTERN) is by definition
+              wrong — if there were a real error, MinimalFix would have changed.
+              Style, idiomatic, register, and collocation upgrades on clean text are
+              still welcome.
             
             ## PHRASE BANK REQUIREMENTS
             For each phrase, provide:
@@ -407,7 +417,10 @@ public class OpenAICoachService : ICoachService
             2. Check for Sie/du mixing (register consistency)
             3. Provide minimal fix (grammar only, PRESERVE MEANING)
             4. Provide upgraded version at {request.TargetLevel} level
-            5. Give 3-5 feedback items with EXACT category codes
+            5. Give 0-5 feedback items with EXACT category codes — only for genuine,
+               actionable issues. Fewer high-quality items beat a padded list.
+               If the text is already correct, returning an empty feedback array is
+               the right answer.
             6. Extract up to 10 phrase PATTERNS from your upgraded text, excluding phrases the user already used correctly in their original input
             
             CRITICAL REMINDERS:
@@ -443,6 +456,14 @@ public class OpenAICoachService : ICoachService
         public string? Issue { get; init; }
         public string? WhyItMatters { get; init; }
         public string? QuickRule { get; init; }
+        public string? Before { get; init; }
+        public string? After { get; init; }
+
+        /// <summary>
+        /// Legacy single-string field. Models occasionally still emit this even when
+        /// the prompt asks for before/after — we accept it as a fallback so the
+        /// item isn't silently lost while the model adapts.
+        /// </summary>
         public string? Example { get; init; }
         public string? Tag { get; init; }
     }
@@ -464,6 +485,111 @@ public class OpenAICoachService : ICoachService
         public string? PrimaryMeaning { get; init; }
         public string? AlternativeMeaning { get; init; }
         public string? AlternativeText { get; init; }
+    }
+
+    /// <summary>
+    /// Hard-grammar tags whose definition implies a MinimalFix change. If the entry
+    /// is clean (MinimalFix == OriginalText), feedback in these categories is by
+    /// definition either hallucinated or contradicts MinimalFix. Either way, drop it.
+    /// Style/idiomatic/register/collocation tags are kept on clean entries because
+    /// they legitimately describe upgrades above the minimal-fix line.
+    /// </summary>
+    private static readonly HashSet<string> HardGrammarTagsForCleanEntry =
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            "ORTHOGRAPHY",
+            "CLAUSE_STRUCTURE",
+            "VERB_PATTERN"
+        };
+
+    /// <summary>
+    /// Server-side feedback validation. Drops items that are not actionable feedback:
+    ///   1. Items whose before/after are equivalent (the model couldn't actually
+    ///      produce a fix — most commonly because the original was already correct).
+    ///   2. Items with hard-grammar tags on clean entries (see <see cref="HardGrammarTagsForCleanEntry"/>).
+    /// Legacy single-string "example" responses are split on common arrow delimiters
+    /// so the same equivalence check can be applied; if it survives, it's preserved
+    /// in <see cref="FeedbackItem.Example"/> for compatibility.
+    /// </summary>
+    private static List<FeedbackItem> FilterFeedback(List<FeedbackDto>? raw, bool isCleanEntry)
+    {
+        if (raw is null || raw.Count == 0)
+            return [];
+
+        var result = new List<FeedbackItem>(raw.Count);
+        foreach (var f in raw)
+        {
+            if (isCleanEntry && !string.IsNullOrEmpty(f.Tag)
+                && HardGrammarTagsForCleanEntry.Contains(f.Tag))
+            {
+                continue;
+            }
+
+            string? before = string.IsNullOrWhiteSpace(f.Before) ? null : f.Before;
+            string? after = string.IsNullOrWhiteSpace(f.After) ? null : f.After;
+            string? example = null;
+
+            if (before is null && after is null && !string.IsNullOrWhiteSpace(f.Example))
+            {
+                var split = TrySplitLegacyExample(f.Example);
+                if (split is { } parts)
+                {
+                    before = parts.before;
+                    after = parts.after;
+                }
+                else
+                {
+                    example = f.Example;
+                }
+            }
+
+            if (before is not null && after is not null
+                && string.Equals(NormalizeForComparison(before), NormalizeForComparison(after),
+                    StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            result.Add(new FeedbackItem
+            {
+                Issue = f.Issue ?? "",
+                WhyItMatters = f.WhyItMatters ?? "",
+                QuickRule = f.QuickRule ?? "",
+                Before = before,
+                After = after,
+                Example = example,
+                Tag = f.Tag
+            });
+        }
+
+        return result;
+    }
+
+    private static readonly string[] LegacyExampleDelimiters =
+        [" → ", " -> ", " => ", "→", "->", "=>"];
+
+    /// <summary>
+    /// Splits a legacy "before → after" example string on the first arrow-style
+    /// delimiter we recognize. Returns null if no delimiter is found, so the
+    /// equivalence check can fall through to "preserve as-is".
+    /// </summary>
+    private static (string before, string after)? TrySplitLegacyExample(string example)
+    {
+        foreach (var delim in LegacyExampleDelimiters)
+        {
+            var idx = example.IndexOf(delim, StringComparison.Ordinal);
+            if (idx > 0 && idx + delim.Length < example.Length)
+            {
+                var before = example[..idx].Trim();
+                var after = example[(idx + delim.Length)..].Trim();
+                if (before.Length > 0 && after.Length > 0)
+                {
+                    return (before, after);
+                }
+            }
+        }
+
+        return null;
     }
 
     /// <summary>

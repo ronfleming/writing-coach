@@ -43,7 +43,27 @@ public record FeedbackItem
     public required string Issue { get; init; }
     public required string WhyItMatters { get; init; }
     public required string QuickRule { get; init; }
-    public required string Example { get; init; }
+
+    /// <summary>
+    /// The original phrase from the user's text, exactly as written (or a paraphrase
+    /// if the issue is structural). Paired with <see cref="After"/> to form the
+    /// before/after example. Should never equal <see cref="After"/>.
+    /// </summary>
+    public string? Before { get; init; }
+
+    /// <summary>
+    /// The corrected/improved phrase. Paired with <see cref="Before"/>.
+    /// Server-side validation drops feedback items whose Before/After are equivalent.
+    /// </summary>
+    public string? After { get; init; }
+
+    /// <summary>
+    /// Legacy single-string example field ("before → after"). Retained so historic
+    /// sessions stored in Cosmos DB before the Before/After split still render.
+    /// New responses always populate Before/After and leave this null.
+    /// </summary>
+    public string? Example { get; init; }
+
     public string? Tag { get; init; }
 }
 

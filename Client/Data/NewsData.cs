@@ -7,6 +7,15 @@ public static class NewsData
     public static IReadOnlyList<NewsEntryMeta> Entries { get; } = new List<NewsEntryMeta>
     {
         new(
+            Slug: "feedback-you-can-trust",
+            Title: "Feedback You Can Trust: Filtering Out False-Positive Corrections",
+            Summary: "A real session surfaced a 'fix' that wasn't a fix — the before and after were identical. Three new filters now drop hallucinated grammar feedback so every correction you see is one you can act on.",
+            MetaDescription: "German Writing Coach now filters false-positive grammar feedback: identical before/after corrections are dropped, and hard-grammar feedback no longer contradicts Clean Entries.",
+            PublishedDate: new DateOnly(2026, 5, 1),
+            ContentComponent: typeof(Client.Components.NewsEntries.NewsEntry_TrustworthyFeedback),
+            Keywords: "German writing feedback accuracy, AI grammar checker false positives, trustworthy German writing tool, German subordinate clause verb position, Goethe-Institut writing practice, AI hallucination filter"
+        ),
+        new(
             Slug: "writing-prompts-and-clean-entry-tracking",
             Title: "New Features: Writing Prompts for Every Level and Clean Entry Tracking",
             Summary: "Over 200 writing prompts matched to your CEFR level and context, plus Clean Entry tracking to highlight when your German writing needs no corrections.",

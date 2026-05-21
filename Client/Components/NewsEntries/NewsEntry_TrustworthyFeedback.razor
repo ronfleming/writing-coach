@@ -1,0 +1,95 @@
+<h2>The "fix" that wasn't a fix</h2>
+<p>
+    A few weeks ago, while running my own German writing through German Writing Coach,
+    I noticed something odd. I'd written the phrase <em>"wie man seine Abgabe in OpenAI sehen
+    soll"</em> — a textbook subordinate clause, with the conjugated verb at the end where it
+    belongs. The tool flagged it under "Falsche Verbposition im Nebensatz" (wrong verb
+    position in subordinate clause), explained the rule, and offered a correction:
+</p>
+<pre><code>wie man seine Abgabe in OpenAI sehen soll → wie man seine Abgabe in OpenAI sehen soll</code></pre>
+<p>
+    The "before" and the "after" were word-for-word identical. The tool was confidently
+    telling me to fix something that wasn't broken, and the proof of the fix was the same
+    sentence I'd submitted.
+</p>
+<p>
+    For a learner, that's worse than no feedback. If you're not sure of your own German,
+    you might trust the tool, hunt for a difference that doesn't exist, and walk away
+    convinced you got something wrong. The whole point of a writing coach is to be a
+    reliable second pair of eyes — and a coach who invents mistakes isn't reliable.
+</p>
+
+<h2>Why it happened</h2>
+<p>
+    AI models, even careful ones, sometimes pattern-match a familiar grammar rule onto a
+    sentence that already follows it. The model sees a subordinate clause, knows there's
+    a rule about verb position in subordinate clauses, and feels obligated to comment on
+    it. When asked to produce a correction, it can't actually find anything to change, so
+    it just emits the same sentence twice. It's the writing-coach equivalent of a teacher
+    who feels obligated to mark something wrong on every paper.
+</p>
+
+<h2>What changed</h2>
+<p>
+    This update adds three layers of protection so that the feedback you receive is
+    feedback you can act on:
+</p>
+<ul>
+    <li>
+        <strong>Smarter "before / after" examples.</strong> Each feedback item now
+        provides its before and after as separate pieces, and the tool double-checks that
+        the two are actually different. If a "fix" turns out to be identical to the
+        original, the feedback item is dropped before it reaches you. As a small visual
+        bonus, the before is now shown struck through in red and the after in green, so
+        the change is immediately obvious at a glance.
+    </li>
+    <li>
+        <strong>Honest Clean Entries.</strong> When your German text needs no grammar
+        fixes — a Clean Entry — the tool no longer shows hard-grammar feedback
+        (orthography, subordinate clause structure, verb-with-preposition patterns) on
+        top of it. If something was a real grammar mistake, it would have appeared in the
+        Minimal Fix; if Minimal Fix is identical to your original, by definition no
+        grammar fix was needed. Style and idiomatic upgrades still show up, because clean
+        writing can always be sharpened.
+    </li>
+    <li>
+        <strong>Less pressure to find errors.</strong> The tool used to be asked to
+        produce three to five feedback items per session. That target is now zero to
+        five — only when something genuinely warrants comment. If your writing is
+        clean, you'll see fewer items, and that's a feature, not a bug.
+    </li>
+</ul>
+
+<h2>What you'll notice</h2>
+<p>
+    Most of the time, you won't notice anything different — well-written text that
+    previously got real feedback will continue to get the same real feedback. What you
+    should stop seeing is the occasional "fix this thing that doesn't need fixing" item.
+    Clean Entries should feel cleaner: a green badge with no contradicting grammar
+    feedback below it.
+</p>
+<p>
+    Genuine upgrade-level feedback — style, idiomatic phrasing, register, collocations —
+    is unaffected. The goal isn't less feedback for its own sake; it's to make sure that
+    every piece of feedback you receive is feedback you can trust.
+</p>
+
+<h2>Why this matters for exam prep</h2>
+<p>
+    For learners preparing for Goethe-Institut, TestDaF, or other German writing exams,
+    confidence in your own writing is one of the most underrated skills. Knowing when
+    you've got something right matters as much as knowing when you've got something
+    wrong. False-positive feedback erodes that confidence. By tightening the filter, the
+    hope is that every "this needs work" message in the tool actually means "this needs
+    work."
+</p>
+
+<h2>Try it out</h2>
+<p>
+    The improvements are live now on the <a href="/">Coach page</a>. If you've had a
+    session where the feedback felt off, try it again. As always, the tool is free and
+    the
+    <a href="https://github.com/ronfleming/writing-coach" target="_blank" rel="noopener">source code is open</a>.
+    If you spot a feedback item that still doesn't pass the smell test,
+    <a href="mailto:contact@germanwritingcoach.com">I'd love to hear about it</a>.
+</p>

@@ -112,7 +112,18 @@
                         </div>
                         <p class="why-matters">@item.WhyItMatters</p>
                         <p class="quick-rule">💡 @item.QuickRule</p>
-                        <code class="example">@item.Example</code>
+                        @if (!string.IsNullOrEmpty(item.Before) && !string.IsNullOrEmpty(item.After))
+                        {
+                            <div class="example">
+                                <span class="example-before">@item.Before</span>
+                                <span class="example-arrow">→</span>
+                                <span class="example-after">@item.After</span>
+                            </div>
+                        }
+                        else if (!string.IsNullOrEmpty(item.Example))
+                        {
+                            <code class="example">@item.Example</code>
+                        }
                     </div>
                 }
             </div>
